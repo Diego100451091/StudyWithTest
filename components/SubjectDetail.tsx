@@ -2,17 +2,19 @@ import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Play, Trash2, Clock, HelpCircle, CheckCircle2, AlertTriangle, MoreHorizontal, Edit, ListChecks } from 'lucide-react';
 import { UserData, Test, Subject, TestMode } from '../types';
+import TestEditor from './TestEditor';
 
 interface SubjectDetailProps {
   data: UserData;
   onDeleteTest: (id: string) => void;
-  onUpdateTest: (test: Test) => void; // Not implemented fully in this snippet for brevity, but wired up
+  onUpdateTest: (test: Test) => void;
 }
 
-const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, onDeleteTest }) => {
+const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, onDeleteTest, onUpdateTest }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedTests, setSelectedTests] = useState<Set<string>>(new Set());
+  const [editingTest, setEditingTest] = useState<Test | null>(null);
   
   const subject = data.subjects.find(s => s.id === id);
   const tests = data.tests.filter(t => t.subjectId === id);
@@ -64,8 +66,27 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, onDeleteTest }) => 
     navigate(`/run/${id}?type=bookmarked&mode=${mode}`);
   };
 
+  const handleEditTest = (test: Test, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTest(test);
+  };
+
+  const handleSaveTest = (updatedTest: Test) => {
+    onUpdateTest(updatedTest);
+    setEditingTest(null);
+  };
+
   return (
-    <div className="max-w-5xl mx-auto pb-20">
+    <>
+      {editingTest && (
+        <TestEditor
+          test={editingTest}
+          onSave={handleSaveTest}
+          onCancel={() => setEditingTest(null)}
+        />
+      )}
+      
+      <div className="max-w-5xl mx-auto pb-20">
       <div className="mb-6">
         <Link to="/" className="inline-flex items-center text-slate-500 hover:text-primary mb-4 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Subjects
@@ -188,6 +209,13 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, onDeleteTest }) => 
                         <Play className="w-4 h-4" />
                     </button>
                     <button 
+                        onClick={(e) => handleEditTest(test, e)}
+                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full"
+                        title="Edit test"
+                    >
+                        <Edit className="w-4 h-4" />
+                    </button>
+                    <button 
                         onClick={(e) => {
                             e.stopPropagation();
                             if(window.confirm('Delete this test?')) onDeleteTest(test.id);
@@ -207,7 +235,8 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, onDeleteTest }) => 
             </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
