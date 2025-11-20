@@ -96,12 +96,19 @@ const Layout: React.FC<LayoutProps> = ({ children, onExport, onImport }) => {
             <span>Export Data</span>
           </button>
           <button 
-            onClick={onImport} // This triggers the hidden input click in parent or modal
+            onClick={handleImportClick}
             className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
           >
             <Upload className="w-4 h-4" />
             <span>Import Data</span>
           </button>
+          <input 
+            ref={FileInput}
+            type="file"
+            accept=".json"
+            onChange={handleFileChange}
+            className="hidden"
+          />
         </div>
       </aside>
 
