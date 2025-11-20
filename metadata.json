@@ -1,0 +1,5 @@
+{
+  "name": "StudyWithTest",
+  "description": "A powerful, offline-first study application allowing users to organize subjects, take AI-generated tests, and track progress with advanced study modes.",
+  "requestFramePermissions": []
+}
