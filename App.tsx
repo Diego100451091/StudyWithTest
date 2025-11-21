@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
@@ -7,6 +7,8 @@ import TestRunner from './components/TestRunner';
 import AITools from './components/AITools';
 import HistoryView from './components/HistoryView';
 import Tutorial from './components/Tutorial';
+import { DataConflictModal } from './components/DataConflictModal';
+import { AuthModal } from './components/AuthModal';
 import { useStore } from './services/store';
 
 const App: React.FC = () => {
@@ -15,6 +17,10 @@ const App: React.FC = () => {
     loaded,
     showTutorial,
     language,
+    firebaseAuth,
+    syncing,
+    lastSync,
+    conflictData,
     openTutorial,
     closeTutorial,
     toggleLanguage,
@@ -27,8 +33,16 @@ const App: React.FC = () => {
     saveResult,
     toggleBookmark,
     exportData,
-    importData
+    importData,
+    signInWithEmail,
+    signUpWithEmail,
+    signOutFromGoogle,
+    syncWithFirebase,
+    resolveConflictKeepLocal,
+    resolveConflictKeepDrive,
   } = useStore();
+
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Listen for import event from Layout
   useEffect(() => {
@@ -51,6 +65,12 @@ const App: React.FC = () => {
         onOpenTutorial={openTutorial}
         onToggleLanguage={toggleLanguage}
         language={language}
+        firebaseAuth={firebaseAuth}
+        onShowAuthModal={() => setShowAuthModal(true)}
+        onSignOutFromGoogle={signOutFromGoogle}
+        onSyncWithFirebase={syncWithFirebase}
+        syncing={syncing}
+        lastSync={lastSync}
       >
         <Routes>
           <Route 
@@ -107,6 +127,30 @@ const App: React.FC = () => {
       </Layout>
       
       <Tutorial isOpen={showTutorial} onClose={closeTutorial} language={language} />
+      
+      {showAuthModal && (
+        <AuthModal
+          language={language}
+          onSignIn={signInWithEmail}
+          onSignUp={signUpWithEmail}
+          onClose={() => setShowAuthModal(false)}
+        />
+      )}
+      
+      {conflictData && (
+        <DataConflictModal
+          localData={conflictData.local}
+          driveData={conflictData.drive}
+          localChecksum={conflictData.localChecksum}
+          driveChecksum={conflictData.driveChecksum}
+          localLastModified={conflictData.localLastModified}
+          driveLastModified={conflictData.driveLastModified}
+          language={language}
+          onSelectLocal={resolveConflictKeepLocal}
+          onSelectCloud={resolveConflictKeepDrive}
+          onClose={() => {}}
+        />
+      )}
     </HashRouter>
   );
 };
