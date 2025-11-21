@@ -71,6 +71,7 @@ const App: React.FC = () => {
                 <SubjectDetail 
                     data={data}
                     language={language}
+                    onAddTest={addTest}
                     onDeleteTest={deleteTest}
                     onUpdateTest={updateTest}
                 />

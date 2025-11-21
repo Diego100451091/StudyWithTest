@@ -59,7 +59,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onExport, onImport, onOpenTut
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-200 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-70 bg-white border-r border-slate-200 transform transition-transform duration-200 ease-in-out
         lg:relative lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>

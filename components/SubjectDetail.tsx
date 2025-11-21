@@ -8,15 +8,17 @@ import TestEditor from './TestEditor';
 interface SubjectDetailProps {
   data: UserData;
   language: Language;
+  onAddTest: (test: Test) => void;
   onDeleteTest: (id: string) => void;
   onUpdateTest: (test: Test) => void;
 }
 
-const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onDeleteTest, onUpdateTest }) => {
+const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest, onDeleteTest, onUpdateTest }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedTests, setSelectedTests] = useState<Set<string>>(new Set());
   const [editingTest, setEditingTest] = useState<Test | null>(null);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
   const t = getTranslation(language);
   
   const subject = data.subjects.find(s => s.id === id);
@@ -72,11 +74,35 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onDeleteT
   const handleEditTest = (test: Test, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingTest(test);
+    setIsCreatingNew(false);
+  };
+
+  const handleCreateNewTest = () => {
+    const newTest: Test = {
+      id: crypto.randomUUID(),
+      subjectId: id!,
+      title: '',
+      description: '',
+      createdAt: Date.now(),
+      questions: []
+    };
+    setEditingTest(newTest);
+    setIsCreatingNew(true);
   };
 
   const handleSaveTest = (updatedTest: Test) => {
-    onUpdateTest(updatedTest);
+    if (isCreatingNew) {
+      onAddTest(updatedTest);
+    } else {
+      onUpdateTest(updatedTest);
+    }
     setEditingTest(null);
+    setIsCreatingNew(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTest(null);
+    setIsCreatingNew(false);
   };
 
   return (
@@ -86,7 +112,7 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onDeleteT
           test={editingTest}
           language={language}
           onSave={handleSaveTest}
-          onCancel={() => setEditingTest(null)}
+          onCancel={handleCancelEdit}
         />
       )}
       
@@ -103,13 +129,22 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onDeleteT
                 <p className="text-slate-500">{tests.length} {t.testsAvailable}</p>
              </div>
           </div>
-          <Link 
-            to="/ai-tools" 
-            className="add-test-btn flex items-center justify-center space-x-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-all shadow-lg"
-          >
-             <Plus className="w-4 h-4" />
-             <span>{t.importTestViaAI}</span>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              onClick={handleCreateNewTest}
+              className="flex items-center justify-center space-x-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t.createTestManually}</span>
+            </button>
+            <Link 
+              to="/ai-tools" 
+              className="add-test-btn flex items-center justify-center space-x-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-all shadow-lg"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t.importTestViaAI}</span>
+            </Link>
+          </div>
         </div>
       </div>
 

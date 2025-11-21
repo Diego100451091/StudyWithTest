@@ -49,6 +49,8 @@ export interface Translations {
   deleteTest: string;
   noTestsYet: string;
   generateWithAI: string;
+  createTestManually: string;
+  newTest: string;
   
   // Test Editor
   testTitle: string;
@@ -199,6 +201,8 @@ export const translations: Record<Language, Translations> = {
     deleteTest: 'Eliminar este test',
     noTestsYet: 'Aún no hay tests en esta asignatura.',
     generateWithAI: 'Genera uno con IA',
+    createTestManually: 'Crear Test Manualmente',
+    newTest: 'Nuevo Test',
     
     // Test Editor
     testTitle: 'Título del Test',
@@ -348,6 +352,8 @@ export const translations: Record<Language, Translations> = {
     deleteTest: 'Delete this test',
     noTestsYet: 'No tests in this subject yet.',
     generateWithAI: 'Generate one with AI',
+    createTestManually: 'Create Test Manually',
+    newTest: 'New Test',
     
     // Test Editor
     testTitle: 'Test Title',
