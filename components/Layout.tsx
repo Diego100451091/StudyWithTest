@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Menu, X, Home, History, Wand2, Download, Upload, Settings, HelpCircle, Languages } from 'lucide-react';
+import { BookOpen, Menu, X, Home, History, Wand2, Download, Upload, Settings, HelpCircle, Languages, Cloud, LogOut, RefreshCw, AlertCircle } from 'lucide-react';
 import { Language, getTranslation } from '../services/translations';
+import { FirebaseAuthState, firebaseService } from '../services/firebase';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,12 +11,54 @@ interface LayoutProps {
   onOpenTutorial: () => void;
   onToggleLanguage: () => void;
   language: Language;
+  firebaseAuth: FirebaseAuthState;
+  onShowAuthModal: () => void;
+  onSignOutFromGoogle: () => void;
+  onSyncWithFirebase: () => void;
+  syncing: boolean;
+  lastSync: string | null;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, onExport, onImport, onOpenTutorial, onToggleLanguage, language }) => {
+const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  onExport, 
+  onImport, 
+  onOpenTutorial, 
+  onToggleLanguage, 
+  language,
+  firebaseAuth,
+  onShowAuthModal,
+  onSignOutFromGoogle,
+  onSyncWithFirebase,
+  syncing,
+  lastSync,
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const t = getTranslation(language);
+
+  const formatLastSync = (syncTime: string | null) => {
+    if (!syncTime) return t.notSynced;
+    try {
+      const date = new Date(syncTime);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      
+      if (diffMins < 1) return language === 'es' ? 'Ahora' : 'Just now';
+      if (diffMins < 60) return `${diffMins} ${language === 'es' ? 'min' : 'min'}`;
+      
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours} ${language === 'es' ? 'h' : 'h'}`;
+      
+      return date.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch {
+      return t.notSynced;
+    }
+  };
 
   const navItems = [
     { path: '/', label: t.subjects, icon: Home },
@@ -91,29 +134,87 @@ const Layout: React.FC<LayoutProps> = ({ children, onExport, onImport, onOpenTut
           ))}
         </nav>
 
-        <div className="data-management absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100 bg-slate-50">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">{t.dataManagement}</p>
-          <button 
-            onClick={onExport}
-            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            <span>{t.exportData}</span>
-          </button>
-          <button 
-            onClick={handleImportClick}
-            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
-          >
-            <Upload className="w-4 h-4" />
-            <span>{t.importData}</span>
-          </button>
-          <input 
-            ref={FileInput}
-            type="file"
-            accept=".json"
-            onChange={handleFileChange}
-            className="hidden"
-          />
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100 bg-slate-50 space-y-4">
+          {/* Google Drive Section */}
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">Firebase Sync</p>
+            {!firebaseService.isConfigured() ? (
+              <div className="px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                <div className="flex items-start space-x-2">
+                  <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-medium text-yellow-800">{t.firebaseNotConfigured}</p>
+                    <p className="text-xs text-yellow-700 mt-1">{t.firebaseNotConfiguredDesc}</p>
+                  </div>
+                </div>
+              </div>
+            ) : firebaseAuth.isSignedIn ? (
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-md border border-green-200">
+                  <Cloud className="w-4 h-4 text-green-600" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-slate-900 font-medium truncate">
+                      {firebaseAuth.user?.email || 'Connected'}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {syncing ? t.syncing : `${t.lastSync}: ${formatLastSync(lastSync)}`}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={onSyncWithFirebase}
+                    disabled={syncing}
+                    className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 text-xs text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
+                    <span>{t.syncWithFirebase}</span>
+                  </button>
+                  <button 
+                    onClick={onSignOutFromGoogle}
+                    className="flex items-center justify-center px-3 py-2 text-xs text-slate-600 hover:bg-white hover:text-red-600 rounded-md transition-colors"
+                    title={t.signOut}
+                  >
+                    <LogOut className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button 
+                onClick={onShowAuthModal}
+                className="flex w-full items-center justify-center space-x-2 px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+              >
+                <Cloud className="w-4 h-4" />
+                <span>{t.signIn}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Data Management Section */}
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">{t.dataManagement}</p>
+            <button 
+              onClick={onExport}
+              className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>{t.exportData}</span>
+            </button>
+            <button 
+              onClick={handleImportClick}
+              className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              <span>{t.importData}</span>
+            </button>
+            <input 
+              ref={FileInput}
+              type="file"
+              accept=".json"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
         </div>
       </aside>
 

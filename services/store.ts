@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { UserData, Subject, Test, TestResult, Question } from '../types';
 import { Language } from './translations';
+import { firebaseService, FirebaseAuthState } from './firebase';
 
 const STORAGE_KEY = 'study_master_data_v1';
 const TUTORIAL_KEY = 'study_master_tutorial_completed';
 const LANGUAGE_KEY = 'study_master_language';
+const LAST_SYNC_KEY = 'study_master_last_sync';
 
 const INITIAL_DATA: UserData = {
   subjects: [],
@@ -19,6 +21,42 @@ export const useStore = () => {
   const [loaded, setLoaded] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [language, setLanguage] = useState<Language>('es');
+  const [firebaseAuth, setFirebaseAuth] = useState<FirebaseAuthState>({ isSignedIn: false, user: null });
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState<string | null>(null);
+  const [conflictData, setConflictData] = useState<{
+    local: UserData;
+    drive: UserData;
+    localChecksum: string;
+    driveChecksum: string;
+    localLastModified: string;
+    driveLastModified: string;
+  } | null>(null);
+
+  // Initialize Firebase
+  useEffect(() => {
+    const initFirebase = async () => {
+      try {
+        if (firebaseService.isConfigured()) {
+          await firebaseService.initialize();
+          firebaseService.onAuthStateChange((auth) => {
+            setFirebaseAuth(auth);
+          });
+        }
+      } catch (error) {
+        console.error('Failed to initialize Firebase:', error);
+      }
+    };
+    initFirebase();
+  }, []);
+
+  // Initial sync when signing in
+  useEffect(() => {
+    if (firebaseAuth.isSignedIn && !lastSync && !syncing) {
+      checkAndSyncWithFirebase();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firebaseAuth.isSignedIn]);
 
   // Load from storage on mount
   useEffect(() => {
@@ -41,6 +79,12 @@ export const useStore = () => {
       if (savedLanguage && (savedLanguage === 'es' || savedLanguage === 'en')) {
         setLanguage(savedLanguage);
       }
+
+      // Load last sync time
+      const savedLastSync = localStorage.getItem(LAST_SYNC_KEY);
+      if (savedLastSync) {
+        setLastSync(savedLastSync);
+      }
     } catch (e) {
       console.error("Failed to load data", e);
     } finally {
@@ -52,8 +96,82 @@ export const useStore = () => {
   useEffect(() => {
     if (loaded) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      // Auto-sync with Firebase if signed in
+      if (firebaseAuth.isSignedIn && !syncing) {
+        syncWithFirebase();
+      }
     }
   }, [data, loaded]);
+
+  // Check and sync with Firebase when signing in
+  const checkAndSyncWithFirebase = async () => {
+    if (!firebaseAuth.isSignedIn) return;
+
+    try {
+      setSyncing(true);
+      const firebaseData = await firebaseService.downloadData();
+
+      if (!firebaseData) {
+        // No data in Firebase, upload local data
+        await firebaseService.uploadData(data);
+        const now = new Date().toISOString();
+        setLastSync(now);
+        localStorage.setItem(LAST_SYNC_KEY, now);
+        return;
+      }
+
+      // Calculate local checksum
+      const localChecksum = firebaseService.calculateChecksum(data);
+
+      if (localChecksum !== firebaseData.checksum) {
+        // Data conflict detected
+        setConflictData({
+          local: data,
+          drive: firebaseData.data,
+          localChecksum,
+          driveChecksum: firebaseData.checksum,
+          localLastModified: new Date().toISOString(),
+          driveLastModified: firebaseData.lastModified,
+        });
+      } else {
+        // Data matches, just update last sync
+        const now = new Date().toISOString();
+        setLastSync(now);
+        localStorage.setItem(LAST_SYNC_KEY, now);
+      }
+    } catch (error) {
+      console.error('Failed to check and sync with Firebase:', error);
+      if (error instanceof Error) {
+        if (error.message.includes('client is offline')) {
+          console.warn('⚠️ Firestore is being blocked by a browser extension (AdBlock/uBlock). Please disable it for localhost.');
+        }
+      }
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Sync data with Firebase
+  const syncWithFirebase = async () => {
+    if (!firebaseAuth.isSignedIn || syncing) return;
+
+    try {
+      setSyncing(true);
+      await firebaseService.uploadData(data);
+      const now = new Date().toISOString();
+      setLastSync(now);
+      localStorage.setItem(LAST_SYNC_KEY, now);
+    } catch (error) {
+      console.error('Failed to sync with Firebase:', error);
+      if (error instanceof Error) {
+        if (error.message.includes('client is offline')) {
+          console.warn('⚠️ Firestore is being blocked. Disable AdBlock/uBlock for localhost or add an exception for googleapis.com');
+        }
+      }
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const addSubject = (subject: Subject) => {
     setData(prev => ({ ...prev, subjects: [...prev.subjects, subject] }));
@@ -161,11 +279,77 @@ export const useStore = () => {
     localStorage.setItem(LANGUAGE_KEY, newLang);
   };
 
+  // Firebase auth methods
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      await firebaseService.signIn(email, password);
+    } catch (error) {
+      console.error('Failed to sign in:', error);
+      throw error;
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string, displayName: string) => {
+    try {
+      await firebaseService.signUp(email, password, displayName);
+    } catch (error) {
+      console.error('Failed to sign up:', error);
+      throw error;
+    }
+  };
+
+  const signOutFromGoogle = () => {
+    firebaseService.signOut();
+    setFirebaseAuth({ isSignedIn: false, user: null });
+    setLastSync(null);
+    localStorage.removeItem(LAST_SYNC_KEY);
+  };
+
+  // Conflict resolution
+  const resolveConflictKeepLocal = async () => {
+    if (!conflictData) return;
+    
+    try {
+      setSyncing(true);
+      await firebaseService.uploadData(conflictData.local);
+      const now = new Date().toISOString();
+      setLastSync(now);
+      localStorage.setItem(LAST_SYNC_KEY, now);
+      setConflictData(null);
+    } catch (error) {
+      console.error('Failed to resolve conflict:', error);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const resolveConflictKeepDrive = async () => {
+    if (!conflictData) return;
+    
+    try {
+      setSyncing(true);
+      setData(conflictData.drive);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(conflictData.drive));
+      const now = new Date().toISOString();
+      setLastSync(now);
+      localStorage.setItem(LAST_SYNC_KEY, now);
+      setConflictData(null);
+    } catch (error) {
+      console.error('Failed to resolve conflict:', error);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return {
     data,
     loaded,
     showTutorial,
     language,
+    firebaseAuth,
+    syncing,
+    lastSync,
+    conflictData,
     openTutorial,
     closeTutorial,
     toggleLanguage,
@@ -178,6 +362,12 @@ export const useStore = () => {
     saveResult,
     toggleBookmark,
     exportData,
-    importData
+    importData,
+    signInWithEmail,
+    signUpWithEmail,
+    signOutFromGoogle,
+    syncWithFirebase,
+    resolveConflictKeepLocal,
+    resolveConflictKeepDrive,
   };
 };

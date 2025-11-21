@@ -116,6 +116,7 @@ export interface Translations {
   recentActivity: string;
   unknownSubject: string;
   mode: string;
+  results: string;
   
   // Tutorial
   welcome: string;
@@ -149,6 +150,40 @@ export interface Translations {
   intermediate: string;
   hard: string;
   expert: string;
+  
+  // Firebase Integration
+  signIn: string;
+  signUp: string;
+  signOut: string;
+  email: string;
+  password: string;
+  displayName: string;
+  confirmPassword: string;
+  alreadyHaveAccount: string;
+  dontHaveAccount: string;
+  createAccount: string;
+  passwordMismatch: string;
+  invalidEmail: string;
+  weakPassword: string;
+  emailInUse: string;
+  wrongPassword: string;
+  userNotFound: string;
+  syncWithFirebase: string;
+  syncing: string;
+  syncSuccess: string;
+  syncError: string;
+  lastSync: string;
+  notSynced: string;
+  dataConflict: string;
+  dataConflictDescription: string;
+  keepLocal: string;
+  keepCloud: string;
+  localData: string;
+  cloudData: string;
+  items: string;
+  lastModified: string;
+  firebaseNotConfigured: string;
+  firebaseNotConfiguredDesc: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -268,6 +303,7 @@ export const translations: Record<Language, Translations> = {
     recentActivity: 'Actividad Reciente',
     unknownSubject: 'Asignatura Desconocida',
     mode: 'Modo',
+    results: 'Resultados',
     
     // Tutorial
     welcome: '¡Bienvenido a StudyWithTest!',
@@ -301,6 +337,40 @@ export const translations: Record<Language, Translations> = {
     intermediate: 'Intermedio',
     hard: 'Difícil',
     expert: 'Experto',
+    
+    // Firebase Integration
+    signIn: 'Iniciar Sesión',
+    signUp: 'Registrarse',
+    signOut: 'Cerrar sesión',
+    email: 'Correo electrónico',
+    password: 'Contraseña',
+    displayName: 'Nombre',
+    confirmPassword: 'Confirmar contraseña',
+    alreadyHaveAccount: '¿Ya tienes cuenta?',
+    dontHaveAccount: '¿No tienes cuenta?',
+    createAccount: 'Crear cuenta',
+    passwordMismatch: 'Las contraseñas no coinciden',
+    invalidEmail: 'Correo electrónico inválido',
+    weakPassword: 'La contraseña debe tener al menos 6 caracteres',
+    emailInUse: 'Este correo ya está registrado',
+    wrongPassword: 'Contraseña incorrecta',
+    userNotFound: 'Usuario no encontrado',
+    syncWithFirebase: 'Sincronizar',
+    syncing: 'Sincronizando...',
+    syncSuccess: '¡Sincronizado correctamente!',
+    syncError: 'Error al sincronizar',
+    lastSync: 'Última sincronización',
+    notSynced: 'No sincronizado',
+    dataConflict: 'Conflicto de Datos',
+    dataConflictDescription: 'Tus datos locales y los de la nube son diferentes. ¿Qué datos deseas conservar?',
+    keepLocal: 'Mantener Datos Locales',
+    keepCloud: 'Mantener Datos de la Nube',
+    localData: 'Datos Locales',
+    cloudData: 'Datos de la Nube',
+    items: 'elementos',
+    lastModified: 'Última modificación',
+    firebaseNotConfigured: 'Firebase no configurado',
+    firebaseNotConfiguredDesc: 'Para habilitar la sincronización en la nube, configura Firebase en el archivo .env',
   },
   
   en: {
@@ -419,6 +489,7 @@ export const translations: Record<Language, Translations> = {
     recentActivity: 'Recent Activity',
     unknownSubject: 'Unknown Subject',
     mode: 'Mode',
+    results: 'Results',
     
     // Tutorial
     welcome: 'Welcome to StudyWithTest!',
@@ -452,6 +523,40 @@ export const translations: Record<Language, Translations> = {
     intermediate: 'Intermediate',
     hard: 'Hard',
     expert: 'Expert',
+    
+    // Firebase Integration
+    signIn: 'Sign In',
+    signUp: 'Sign Up',
+    signOut: 'Sign Out',
+    email: 'Email',
+    password: 'Password',
+    displayName: 'Name',
+    confirmPassword: 'Confirm password',
+    alreadyHaveAccount: 'Already have an account?',
+    dontHaveAccount: "Don't have an account?",
+    createAccount: 'Create account',
+    passwordMismatch: 'Passwords do not match',
+    invalidEmail: 'Invalid email address',
+    weakPassword: 'Password must be at least 6 characters',
+    emailInUse: 'Email already in use',
+    wrongPassword: 'Wrong password',
+    userNotFound: 'User not found',
+    syncWithFirebase: 'Sync',
+    syncing: 'Syncing...',
+    syncSuccess: 'Synced successfully!',
+    syncError: 'Sync error',
+    lastSync: 'Last sync',
+    notSynced: 'Not synced',
+    dataConflict: 'Data Conflict',
+    dataConflictDescription: 'Your local data and cloud data are different. Which data do you want to keep?',
+    keepLocal: 'Keep Local Data',
+    keepCloud: 'Keep Cloud Data',
+    localData: 'Local Data',
+    cloudData: 'Cloud Data',
+    items: 'items',
+    lastModified: 'Last modified',
+    firebaseNotConfigured: 'Firebase not configured',
+    firebaseNotConfiguredDesc: 'To enable cloud sync, configure Firebase in the .env file',
   }
 };
 
