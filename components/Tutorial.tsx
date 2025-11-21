@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { X, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { Language, getTranslation } from '../services/translations';
 
 interface TutorialStep {
   title: string;
@@ -11,79 +12,85 @@ interface TutorialStep {
   waitForElement?: boolean;
 }
 
-const tutorialSteps: TutorialStep[] = [
+const getTutorialSteps = (lang: Language): TutorialStep[] => {
+  const t = getTranslation(lang);
+  return [
   {
-    title: '¡Bienvenido a StudyWithTest!',
-    description: 'Esta aplicación te ayudará a crear, gestionar y ejecutar tests de estudio para mejorar tu aprendizaje. Te guiaremos a través de las funcionalidades principales.',
+    title: t.welcome,
+    description: t.welcomeDescription,
     route: '/'
   },
   {
-    title: 'Página Principal - Asignaturas',
-    description: 'Esta es tu página principal donde verás todas tus asignaturas. Desde aquí puedes crear nuevas asignaturas haciendo clic en el botón "New Subject".',
+    title: t.mainPageTitle,
+    description: t.mainPageDescription,
     route: '/',
     targetElement: '.add-subject-btn',
     waitForElement: true
   },
   {
-    title: 'Ver Detalle de Asignatura',
-    description: 'Si ya tienes asignaturas creadas, haz clic en cualquier tarjeta para ver sus detalles. Aquí podrás gestionar todos los tests relacionados con esa asignatura.',
+    title: t.viewSubjectDetail,
+    description: t.viewSubjectDescription,
     route: '/',
     targetElement: '.subject-card'
   },
   {
-    title: 'Herramientas de IA',
-    description: 'En la sección "AI Tools" puedes generar tests automáticamente a partir de documentos PDF, textos o apuntes usando inteligencia artificial. Es la forma más rápida de crear contenido.',
+    title: t.aiToolsTitle,
+    description: t.aiToolsDescription,
     route: '/ai-tools',
     targetElement: '[href="/ai-tools"]'
   },
   {
-    title: 'Importar Tests con IA',
-    description: 'Aquí puedes pegar texto, subir PDFs o usar tu API de OpenAI para generar preguntas automáticamente. Una vez generadas, puedes seleccionar la asignatura destino y guardar el test.',
+    title: t.importTestsAI,
+    description: t.importTestsDescription,
     route: '/ai-tools'
   },
   {
-    title: 'Historial y Estadísticas',
-    description: 'En esta sección puedes ver todo tu progreso: tests realizados, puntuaciones a lo largo del tiempo, tendencias de mejora y preguntas que necesitas repasar.',
+    title: t.historyStatsTitle,
+    description: t.historyStatsDescription,
     route: '/history',
     targetElement: '[href="/history"]'
   },
   {
-    title: 'Tus Resultados',
-    description: 'Aquí se mostrarán todos los intentos de tests que hayas realizado, con gráficos de rendimiento, preguntas falladas y marcadas. Es tu centro de análisis de progreso.',
+    title: t.yourResultsTitle,
+    description: t.yourResultsDescription,
     route: '/history'
   },
   {
-    title: 'Menú de Navegación',
-    description: 'Usa el menú lateral para navegar entre secciones. En dispositivos móviles, puedes abrir el menú con el botón de hamburguesa en la parte superior.',
+    title: t.navigationMenu,
+    description: t.navigationDescription,
     targetElement: 'nav'
   },
   {
-    title: 'Exportar e Importar Datos',
-    description: 'En la parte inferior del menú lateral encontrarás opciones para exportar todos tus datos a un archivo JSON y para importar datos desde otros dispositivos o copias de seguridad. ¡Así nunca perderás tu progreso!',
+    title: t.exportImport,
+    description: t.exportImportDescription,
     targetElement: '.data-management'
   },
   {
-    title: 'Flujo Básico de Uso',
-    description: '1) Crea una asignatura 2) Añade tests (manualmente o con IA) 3) Ejecuta los tests en modo Study o Exam 4) Revisa tus estadísticas y repasa las preguntas falladas. ¡Así de simple!',
+    title: t.basicWorkflow,
+    description: t.basicWorkflowDescription,
     route: '/'
   },
   {
-    title: '¡Todo Listo!',
-    description: 'Ya conoces las funcionalidades principales. Puedes volver a ver este tutorial en cualquier momento haciendo clic en el icono de ayuda en la esquina superior. ¡Buena suerte con tus estudios!',
+    title: t.allReady,
+    description: t.allReadyDescription,
     route: '/'
   }
 ];
+};
 
 interface TutorialProps {
   isOpen: boolean;
   onClose: () => void;
+  language: Language;
 }
 
-const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose }) => {
+const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, language }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const t = getTranslation(language);
+  const tutorialSteps = getTutorialSteps(language);
 
   // Navigate to the appropriate route when step changes
   useEffect(() => {

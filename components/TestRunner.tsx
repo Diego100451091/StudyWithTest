@@ -2,17 +2,20 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Flag, Check, X, Clock, RotateCcw, Save, CheckCircle2 } from 'lucide-react';
 import { UserData, Test, Question, QuestionResult, TestMode, TestResult } from '../types';
+import { Language, getTranslation } from '../services/translations';
 
 interface TestRunnerProps {
   data: UserData;
+  language: Language;
   onSaveResult: (result: TestResult) => void;
   onToggleBookmark: (qid: string) => void;
 }
 
-const TestRunner: React.FC<TestRunnerProps> = ({ data, onSaveResult, onToggleBookmark }) => {
+const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, onToggleBookmark }) => {
   const { subjectId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const t = getTranslation(language);
 
   // Query Params
   const testIds = searchParams.get('tests')?.split(',') || [];
@@ -122,17 +125,17 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, onSaveResult, onToggleBoo
     return (
       <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mt-8">
         <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">Test Complete!</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">{t.testComplete}</h2>
             <div className="text-6xl font-black text-primary mb-4">{percent}%</div>
             <div className="flex justify-center gap-6 text-sm text-slate-500">
-                <span className="flex items-center"><Check className="w-4 h-4 mr-1 text-green-500"/> {correctCount} Correct</span>
-                <span className="flex items-center"><X className="w-4 h-4 mr-1 text-red-500"/> {activeQuestions.length - correctCount} Incorrect</span>
+                <span className="flex items-center"><Check className="w-4 h-4 mr-1 text-green-500"/> {correctCount} {t.correct}</span>
+                <span className="flex items-center"><X className="w-4 h-4 mr-1 text-red-500"/> {activeQuestions.length - correctCount} {t.incorrect}</span>
                 <span className="flex items-center"><Clock className="w-4 h-4 mr-1"/> {Math.floor(elapsed / 60)}m {elapsed % 60}s</span>
             </div>
         </div>
 
         <div className="space-y-6">
-            <h3 className="font-bold text-slate-700 border-b pb-2">Review Answers</h3>
+            <h3 className="font-bold text-slate-700 border-b pb-2">{t.reviewAnswers}</h3>
             {activeQuestions.map((q, idx) => {
                 const userAnswer = answers[q.id];
                 const isCorrect = userAnswer === q.correctOptionId;
@@ -147,12 +150,12 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, onSaveResult, onToggleBoo
                                 <p className="font-medium text-slate-900 mb-2">{q.text}</p>
                                 <div className="text-sm space-y-1">
                                     {!isCorrect && (
-                                        <p className="text-red-700">Your answer: <span className="font-semibold">{userOpt?.text || 'Skipped'}</span></p>
+                                        <p className="text-red-700">{t.yourAnswer} <span className="font-semibold">{userOpt?.text || t.skipped}</span></p>
                                     )}
-                                    <p className="text-green-700">Correct answer: <span className="font-semibold">{correctOpt?.text}</span></p>
+                                    <p className="text-green-700">{t.correctAnswer} <span className="font-semibold">{correctOpt?.text}</span></p>
                                 </div>
                                 <div className="mt-3 text-sm text-slate-600 bg-white/50 p-3 rounded">
-                                    <span className="font-semibold">Explanation:</span> {q.explanation}
+                                    <span className="font-semibold">{t.explanation}:</span> {q.explanation}
                                 </div>
                             </div>
                         </div>
@@ -163,17 +166,17 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, onSaveResult, onToggleBoo
 
         <div className="mt-8 flex justify-center space-x-4">
             <button onClick={() => navigate(`/subject/${subjectId}`)} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition-colors">
-                Back to Subject
+                {t.backToSubject}
             </button>
             <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center">
-                <RotateCcw className="w-4 h-4 mr-2" /> Retry Test
+                <RotateCcw className="w-4 h-4 mr-2" /> {t.retryTest}
             </button>
         </div>
       </div>
     );
   }
 
-  if (!currentQuestion) return <div className="p-8 text-center">Loading...</div>;
+  if (!currentQuestion) return <div className="p-8 text-center">{t.loading}</div>;
 
   // Determine visual states based on Mode
   const showResult = mode === TestMode.READING || (mode === TestMode.STUDY && hasAnswered);
@@ -250,7 +253,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, onSaveResult, onToggleBoo
         {showResult && (
             <div className="mt-8 bg-blue-50 border border-blue-100 p-5 rounded-xl animate-in fade-in slide-in-from-bottom-2">
                 <h4 className="font-bold text-blue-900 mb-2 flex items-center">
-                    <CheckCircle2 className="w-4 h-4 mr-2" /> Explanation
+                    <CheckCircle2 className="w-4 h-4 mr-2" /> {t.explanation}
                 </h4>
                 <p className="text-blue-800 leading-relaxed">
                     {currentQuestion.explanation}
@@ -266,7 +269,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, onSaveResult, onToggleBoo
             disabled={currentIndex === 0}
             className="flex items-center px-4 py-2 text-slate-600 hover:bg-white rounded-lg disabled:opacity-50 transition-colors"
           >
-             <ChevronLeft className="w-5 h-5 mr-1" /> Previous
+             <ChevronLeft className="w-5 h-5 mr-1" /> {t.previous}
           </button>
           
           {currentIndex === activeQuestions.length - 1 ? (
@@ -274,14 +277,14 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, onSaveResult, onToggleBoo
                 onClick={finishTest}
                 className="flex items-center px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 shadow-md shadow-green-200 transition-all font-bold"
              >
-                Finish Test <Save className="w-4 h-4 ml-2" />
+                {t.finishTest} <Save className="w-4 h-4 ml-2" />
              </button>
           ) : (
              <button 
                 onClick={() => setCurrentIndex(prev => Math.min(activeQuestions.length - 1, prev + 1))}
                 className="flex items-center px-6 py-3 bg-primary text-white rounded-xl hover:bg-blue-700 shadow-md shadow-blue-200 transition-all font-bold"
              >
-                Next Question <ChevronRight className="w-4 h-4 ml-1" />
+                {t.nextQuestion} <ChevronRight className="w-4 h-4 ml-1" />
              </button>
           )}
       </div>

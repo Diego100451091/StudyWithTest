@@ -14,8 +14,10 @@ const App: React.FC = () => {
     data, 
     loaded,
     showTutorial,
+    language,
     openTutorial,
     closeTutorial,
+    toggleLanguage,
     addSubject, 
     updateSubject, 
     deleteSubject, 
@@ -47,13 +49,16 @@ const App: React.FC = () => {
         onExport={exportData} 
         onImport={() => { /* Triggered via ref in Layout */ }}
         onOpenTutorial={openTutorial}
+        onToggleLanguage={toggleLanguage}
+        language={language}
       >
         <Routes>
           <Route 
             path="/" 
             element={
                 <Dashboard 
-                    data={data} 
+                    data={data}
+                    language={language}
                     onAddSubject={addSubject} 
                     onUpdateSubject={updateSubject}
                     onDeleteSubject={deleteSubject}
@@ -64,7 +69,8 @@ const App: React.FC = () => {
             path="/subject/:id" 
             element={
                 <SubjectDetail 
-                    data={data} 
+                    data={data}
+                    language={language}
                     onDeleteTest={deleteTest}
                     onUpdateTest={updateTest}
                 />
@@ -74,7 +80,8 @@ const App: React.FC = () => {
             path="/run/:subjectId" 
             element={
                 <TestRunner 
-                    data={data} 
+                    data={data}
+                    language={language}
                     onSaveResult={saveResult}
                     onToggleBookmark={toggleBookmark}
                 />
@@ -85,19 +92,20 @@ const App: React.FC = () => {
             element={
                 <AITools 
                     subjects={data.subjects}
+                    language={language}
                     onImportTest={addTest}
                 />
             } 
           />
           <Route 
             path="/history" 
-            element={<HistoryView data={data} />} 
+            element={<HistoryView data={data} language={language} />} 
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
       
-      <Tutorial isOpen={showTutorial} onClose={closeTutorial} />
+      <Tutorial isOpen={showTutorial} onClose={closeTutorial} language={language} />
     </HashRouter>
   );
 };

@@ -1,14 +1,17 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
 import { UserData, TestResult, TestMode } from '../types';
+import { Language, getTranslation } from '../services/translations';
 import { Calendar, Target, Clock } from 'lucide-react';
 
 interface HistoryViewProps {
   data: UserData;
+  language: Language;
 }
 
-const HistoryView: React.FC<HistoryViewProps> = ({ data }) => {
+const HistoryView: React.FC<HistoryViewProps> = ({ data, language }) => {
   const results = [...data.results].sort((a, b) => a.date - b.date);
+  const t = getTranslation(language);
 
   // Prepare Chart Data
   const chartData = results.slice(-20).map(r => ({
@@ -28,18 +31,18 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data }) => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
-       <h1 className="text-3xl font-bold text-slate-900">Your Progress</h1>
+       <h1 className="text-3xl font-bold text-slate-900">{t.yourProgress}</h1>
 
        {results.length === 0 ? (
          <div className="p-12 bg-white rounded-2xl text-center border border-slate-200">
-            <p className="text-slate-500">No test results yet. Take a test to see analytics.</p>
+            <p className="text-slate-500">{t.noResultsYet}</p>
          </div>
        ) : (
          <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Performance Trend */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 className="text-lg font-bold mb-4 text-slate-700">Recent Scores Trend</h3>
+                    <h3 className="text-lg font-bold mb-4 text-slate-700">{t.recentScoresTrend}</h3>
                     <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={chartData}>
@@ -57,7 +60,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data }) => {
 
                 {/* Subject Breakdown */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 className="text-lg font-bold mb-4 text-slate-700">Average Score by Subject</h3>
+                    <h3 className="text-lg font-bold mb-4 text-slate-700">{t.avgScoreBySubject}</h3>
                     <div className="h-64">
                          <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={subjectStats} layout="vertical">
@@ -79,7 +82,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data }) => {
             {/* Recent History List */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100">
-                    <h3 className="font-bold text-slate-800">Recent Activity</h3>
+                    <h3 className="font-bold text-slate-800">{t.recentActivity}</h3>
                 </div>
                 <div className="divide-y divide-slate-100">
                     {results.slice().reverse().map(result => {
@@ -90,11 +93,11 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data }) => {
                                 <div className="flex items-center space-x-4">
                                     <div className={`w-2 h-10 rounded-full`} style={{backgroundColor: subject?.color || '#cbd5e1'}}></div>
                                     <div>
-                                        <p className="font-semibold text-slate-900">{subject?.name || 'Unknown Subject'}</p>
+                                        <p className="font-semibold text-slate-900">{subject?.name || t.unknownSubject}</p>
                                         <p className="text-xs text-slate-500 flex items-center">
                                             <Calendar className="w-3 h-3 mr-1" /> {new Date(result.date).toLocaleDateString()}
                                             <span className="mx-2">•</span>
-                                            <Target className="w-3 h-3 mr-1" /> {result.mode} Mode
+                                            <Target className="w-3 h-3 mr-1" /> {result.mode} {t.mode}
                                         </p>
                                     </div>
                                 </div>

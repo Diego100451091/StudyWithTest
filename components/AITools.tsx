@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
 import { Copy, Check, FileJson, ArrowRight, AlertCircle } from 'lucide-react';
 import { UserData, Subject, Test, Question } from '../types';
+import { Language, getTranslation } from '../services/translations';
 
 interface AIToolsProps {
   subjects: Subject[];
+  language: Language;
   onImportTest: (test: Test) => void;
 }
 
-const AITools: React.FC<AIToolsProps> = ({ subjects, onImportTest }) => {
+const AITools: React.FC<AIToolsProps> = ({ subjects, language, onImportTest }) => {
   const [step, setStep] = useState<'prompt' | 'import'>('prompt');
   const [copied, setCopied] = useState(false);
+  const t = getTranslation(language);
   
   // Form State
   const [config, setConfig] = useState({
     numQuestions: 10,
-    difficulty: 'Intermediate',
+    difficulty: language === 'es' ? 'Intermedio' : 'Intermediate',
     numOptions: 4,
     focusTopic: '',
-    language: 'English'
+    language: language === 'es' ? 'Spanish' : 'English'
   });
   
   // Import State
@@ -106,7 +109,7 @@ Ensure the content is accurate and educational.`;
       };
 
       onImportTest(newTest);
-      alert('Test imported successfully!');
+      alert(t.importSuccess);
       setJsonInput('');
       // Optional: navigate away
     } catch (err: any) {
@@ -122,13 +125,13 @@ Ensure the content is accurate and educational.`;
             onClick={() => setStep('prompt')}
             className={`p-4 text-center font-medium transition-colors ${step === 'prompt' ? 'bg-blue-50 text-primary border-b-2 border-primary' : 'text-slate-600 hover:bg-slate-50'}`}
           >
-            Step 1: Generate Prompt
+            {t.step} 1: {t.generateStep}
           </button>
           <button 
             onClick={() => setStep('import')}
             className={`p-4 text-center font-medium transition-colors ${step === 'import' ? 'bg-blue-50 text-primary border-b-2 border-primary' : 'text-slate-600 hover:bg-slate-50'}`}
           >
-            Step 2: Import JSON
+            {t.step} 2: {t.importStep}
           </button>
         </div>
 
@@ -136,23 +139,23 @@ Ensure the content is accurate and educational.`;
           {step === 'prompt' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">Configure your Prompt</h2>
-                <p className="text-slate-500">Adjust these settings, copy the prompt, and paste it into ChatGPT, Claude, or Gemini along with your study notes or PDF content.</p>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.configurePrompt}</h2>
+                <p className="text-slate-500">{t.configureDescription}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Topic / Context</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.topicContext}</label>
                    <input 
                       type="text"
                       value={config.focusTopic}
                       onChange={e => setConfig({...config, focusTopic: e.target.value})}
-                      placeholder="e.g. Chapter 3 of History Book"
+                      placeholder={language === 'es' ? 'ej. Capítulo 3 del Libro de Historia' : 'e.g. Chapter 3 of History Book'}
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                    />
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Test Language</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.testLanguage}</label>
                    <select 
                       value={config.language}
                       onChange={e => setConfig({...config, language: e.target.value})}
@@ -172,20 +175,20 @@ Ensure the content is accurate and educational.`;
                    </select>
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Difficulty</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.difficulty}</label>
                    <select 
                       value={config.difficulty}
                       onChange={e => setConfig({...config, difficulty: e.target.value})}
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
                    >
-                      <option>Easy</option>
-                      <option>Intermediate</option>
-                      <option>Hard</option>
-                      <option>Expert</option>
+                      <option>{t.easy}</option>
+                      <option>{t.intermediate}</option>
+                      <option>{t.hard}</option>
+                      <option>{t.expert}</option>
                    </select>
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Number of Questions</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.numQuestions}</label>
                    <input 
                       type="number"
                       min="1" max="50"
@@ -195,7 +198,7 @@ Ensure the content is accurate and educational.`;
                    />
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Options per Question</label>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.optionsPerQuestion}</label>
                    <select 
                       value={config.numOptions}
                       onChange={e => setConfig({...config, numOptions: parseInt(e.target.value)})}
@@ -210,7 +213,7 @@ Ensure the content is accurate and educational.`;
               </div>
 
               <div className="relative mt-6">
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">Generated Prompt</label>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">{t.generatedPrompt}</label>
                 <textarea 
                   readOnly
                   value={generatePrompt()}
@@ -221,7 +224,7 @@ Ensure the content is accurate and educational.`;
                   className="absolute top-9 right-4 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-md text-xs font-medium backdrop-blur-sm flex items-center space-x-1 transition-colors"
                 >
                   {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                  <span>{copied ? 'Copied!' : 'Copy to Clipboard'}</span>
+                  <span>{copied ? t.copied : t.copyToClipboard}</span>
                 </button>
               </div>
               
@@ -230,7 +233,7 @@ Ensure the content is accurate and educational.`;
                    onClick={() => setStep('import')}
                    className="flex items-center space-x-2 text-primary font-medium hover:underline"
                  >
-                   <span>I have the JSON, go to Import</span>
+                   <span>{t.goToImport}</span>
                    <ArrowRight className="w-4 h-4" />
                  </button>
               </div>
@@ -240,22 +243,22 @@ Ensure the content is accurate and educational.`;
           {step === 'import' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">Import AI Response</h2>
-                <p className="text-slate-500">Paste the JSON code block provided by the LLM below.</p>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.importAIResponse}</h2>
+                <p className="text-slate-500">{t.pasteJSON}</p>
               </div>
 
               {subjects.length === 0 ? (
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 flex items-start space-x-3">
                   <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium">No Subjects Found</p>
-                    <p className="text-sm">Please create a subject in the Dashboard before importing a test.</p>
+                    <p className="font-medium">{t.noSubjectsFound}</p>
+                    <p className="text-sm">{t.createSubjectFirst}</p>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
                    <div>
-                     <label className="block text-sm font-medium text-slate-700 mb-1">Import into Subject</label>
+                     <label className="block text-sm font-medium text-slate-700 mb-1">{t.importIntoSubject}</label>
                      <select
                        value={targetSubjectId}
                        onChange={e => setTargetSubjectId(e.target.value)}
@@ -268,7 +271,7 @@ Ensure the content is accurate and educational.`;
                    </div>
                    
                    <div>
-                     <label className="block text-sm font-medium text-slate-700 mb-1">JSON Output</label>
+                     <label className="block text-sm font-medium text-slate-700 mb-1">{t.jsonOutput}</label>
                      <textarea 
                         value={jsonInput}
                         onChange={e => setJsonInput(e.target.value)}
@@ -290,7 +293,7 @@ Ensure the content is accurate and educational.`;
                         className="flex items-center space-x-2 bg-primary text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
                       >
                         <FileJson className="w-5 h-5" />
-                        <span>Parse & Save Test</span>
+                        <span>{t.parseAndSave}</span>
                       </button>
                    </div>
                 </div>

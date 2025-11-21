@@ -1,22 +1,26 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Menu, X, Home, History, Wand2, Download, Upload, Settings, HelpCircle } from 'lucide-react';
+import { BookOpen, Menu, X, Home, History, Wand2, Download, Upload, Settings, HelpCircle, Languages } from 'lucide-react';
+import { Language, getTranslation } from '../services/translations';
 
 interface LayoutProps {
   children: React.ReactNode;
   onExport: () => void;
   onImport: () => void;
   onOpenTutorial: () => void;
+  onToggleLanguage: () => void;
+  language: Language;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, onExport, onImport, onOpenTutorial }) => {
+const Layout: React.FC<LayoutProps> = ({ children, onExport, onImport, onOpenTutorial, onToggleLanguage, language }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+  const t = getTranslation(language);
 
   const navItems = [
-    { path: '/', label: 'Subjects', icon: Home },
-    { path: '/history', label: 'History & Stats', icon: History },
-    { path: '/ai-tools', label: 'AI Tools', icon: Wand2 },
+    { path: '/', label: t.subjects, icon: Home },
+    { path: '/history', label: t.history, icon: History },
+    { path: '/ai-tools', label: t.aiTools, icon: Wand2 },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -88,20 +92,20 @@ const Layout: React.FC<LayoutProps> = ({ children, onExport, onImport, onOpenTut
         </nav>
 
         <div className="data-management absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100 bg-slate-50">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">Data Management</p>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">{t.dataManagement}</p>
           <button 
             onClick={onExport}
             className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
           >
             <Download className="w-4 h-4" />
-            <span>Export Data</span>
+            <span>{t.exportData}</span>
           </button>
           <button 
             onClick={handleImportClick}
             className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
           >
             <Upload className="w-4 h-4" />
-            <span>Import Data</span>
+            <span>{t.importData}</span>
           </button>
           <input 
             ref={FileInput}
@@ -121,25 +125,44 @@ const Layout: React.FC<LayoutProps> = ({ children, onExport, onImport, onOpenTut
             <Menu className="w-6 h-6" />
           </button>
           <span className="font-semibold text-slate-800">StudyWithTest</span>
-          <button 
-            onClick={onOpenTutorial}
-            className="text-slate-600 hover:text-primary transition-colors"
-            title="Abrir tutorial"
-          >
-            <HelpCircle className="w-6 h-6" />
-          </button>
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={onToggleLanguage}
+              className="text-slate-600 hover:text-primary transition-colors p-1.5"
+              title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+            >
+              <Languages className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={onOpenTutorial}
+              className="text-slate-600 hover:text-primary transition-colors p-1.5"
+              title={t.tutorial}
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
+          </div>
         </header>
 
         {/* Top Bar (Desktop) */}
         <header className="hidden lg:flex items-center justify-end h-16 px-8 bg-white border-b border-slate-200">
-          <button 
-            onClick={onOpenTutorial}
-            className="flex items-center space-x-2 px-4 py-2 text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors"
-            title="Abrir tutorial"
-          >
-            <HelpCircle className="w-5 h-5" />
-            <span className="text-sm font-medium">Tutorial</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={onToggleLanguage}
+              className="flex items-center space-x-2 px-4 py-2 text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors"
+              title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+            >
+              <Languages className="w-5 h-5" />
+              <span className="text-sm font-medium uppercase">{language}</span>
+            </button>
+            <button 
+              onClick={onOpenTutorial}
+              className="flex items-center space-x-2 px-4 py-2 text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors"
+              title={t.tutorial}
+            >
+              <HelpCircle className="w-5 h-5" />
+              <span className="text-sm font-medium">{t.tutorial}</span>
+            </button>
+          </div>
         </header>
 
         {/* Page Content */}

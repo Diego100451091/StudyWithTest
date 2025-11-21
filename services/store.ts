@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { UserData, Subject, Test, TestResult, Question } from '../types';
+import { Language } from './translations';
 
 const STORAGE_KEY = 'study_master_data_v1';
 const TUTORIAL_KEY = 'study_master_tutorial_completed';
+const LANGUAGE_KEY = 'study_master_language';
 
 const INITIAL_DATA: UserData = {
   subjects: [],
@@ -16,6 +18,7 @@ export const useStore = () => {
   const [data, setData] = useState<UserData>(INITIAL_DATA);
   const [loaded, setLoaded] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [language, setLanguage] = useState<Language>('es');
 
   // Load from storage on mount
   useEffect(() => {
@@ -31,6 +34,12 @@ export const useStore = () => {
       const tutorialCompleted = localStorage.getItem(TUTORIAL_KEY);
       if (!tutorialCompleted) {
         setShowTutorial(true);
+      }
+      
+      // Load language preference
+      const savedLanguage = localStorage.getItem(LANGUAGE_KEY) as Language;
+      if (savedLanguage && (savedLanguage === 'es' || savedLanguage === 'en')) {
+        setLanguage(savedLanguage);
       }
     } catch (e) {
       console.error("Failed to load data", e);
@@ -146,12 +155,20 @@ export const useStore = () => {
     localStorage.setItem(TUTORIAL_KEY, 'true');
   };
 
+  const toggleLanguage = () => {
+    const newLang: Language = language === 'es' ? 'en' : 'es';
+    setLanguage(newLang);
+    localStorage.setItem(LANGUAGE_KEY, newLang);
+  };
+
   return {
     data,
     loaded,
     showTutorial,
+    language,
     openTutorial,
     closeTutorial,
+    toggleLanguage,
     addSubject,
     updateSubject,
     deleteSubject,
