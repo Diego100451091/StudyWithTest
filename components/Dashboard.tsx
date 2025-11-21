@@ -76,7 +76,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onAddSubject, onUpdateSubje
         </div>
         <button 
           onClick={openCreate}
-          className="flex items-center space-x-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md"
+          className="add-subject-btn flex items-center space-x-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-md"
         >
           <Plus className="w-5 h-5" />
           <span>New Subject</span>
@@ -100,7 +100,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, onAddSubject, onUpdateSubje
               <Link 
                 key={subject.id} 
                 to={`/subject/${subject.id}`}
-                className="group bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
+                className="subject-card group bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
               >
                 <div className="h-2 w-full" style={{ backgroundColor: subject.color }} />
                 <div className="p-5 flex-1 flex flex-col">

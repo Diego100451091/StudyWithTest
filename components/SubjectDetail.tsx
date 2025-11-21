@@ -101,7 +101,7 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, onDeleteTest, onUpd
           </div>
           <Link 
             to="/ai-tools" 
-            className="flex items-center justify-center space-x-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-all shadow-lg"
+            className="add-test-btn flex items-center justify-center space-x-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-all shadow-lg"
           >
              <Plus className="w-4 h-4" />
              <span>Import Test via AI</span>
@@ -203,7 +203,7 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, onDeleteTest, onUpd
                              e.stopPropagation();
                              navigate(`/run/${subject.id}?tests=${test.id}&mode=${TestMode.STUDY}`);
                         }}
-                        className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-full"
+                        className="start-test-btn p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-full"
                         title="Run only this test"
                     >
                         <Play className="w-4 h-4" />

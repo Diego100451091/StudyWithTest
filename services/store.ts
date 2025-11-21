@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { UserData, Subject, Test, TestResult, Question } from '../types';
 
 const STORAGE_KEY = 'study_master_data_v1';
+const TUTORIAL_KEY = 'study_master_tutorial_completed';
 
 const INITIAL_DATA: UserData = {
   subjects: [],
@@ -14,6 +15,7 @@ const INITIAL_DATA: UserData = {
 export const useStore = () => {
   const [data, setData] = useState<UserData>(INITIAL_DATA);
   const [loaded, setLoaded] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Load from storage on mount
   useEffect(() => {
@@ -23,6 +25,12 @@ export const useStore = () => {
         const parsed = JSON.parse(stored);
         // Merge with initial to ensure all fields exist (migrations)
         setData({ ...INITIAL_DATA, ...parsed });
+      }
+      
+      // Check if this is the first visit
+      const tutorialCompleted = localStorage.getItem(TUTORIAL_KEY);
+      if (!tutorialCompleted) {
+        setShowTutorial(true);
       }
     } catch (e) {
       console.error("Failed to load data", e);
@@ -129,9 +137,21 @@ export const useStore = () => {
     }
   };
 
+  const openTutorial = () => {
+    setShowTutorial(true);
+  };
+
+  const closeTutorial = () => {
+    setShowTutorial(false);
+    localStorage.setItem(TUTORIAL_KEY, 'true');
+  };
+
   return {
     data,
     loaded,
+    showTutorial,
+    openTutorial,
+    closeTutorial,
     addSubject,
     updateSubject,
     deleteSubject,

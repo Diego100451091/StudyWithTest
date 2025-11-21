@@ -6,12 +6,16 @@ import SubjectDetail from './components/SubjectDetail';
 import TestRunner from './components/TestRunner';
 import AITools from './components/AITools';
 import HistoryView from './components/HistoryView';
+import Tutorial from './components/Tutorial';
 import { useStore } from './services/store';
 
 const App: React.FC = () => {
   const { 
     data, 
-    loaded, 
+    loaded,
+    showTutorial,
+    openTutorial,
+    closeTutorial,
     addSubject, 
     updateSubject, 
     deleteSubject, 
@@ -39,7 +43,11 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <Layout onExport={exportData} onImport={() => { /* Triggered via ref in Layout */ }}>
+      <Layout 
+        onExport={exportData} 
+        onImport={() => { /* Triggered via ref in Layout */ }}
+        onOpenTutorial={openTutorial}
+      >
         <Routes>
           <Route 
             path="/" 
@@ -88,6 +96,8 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
+      
+      <Tutorial isOpen={showTutorial} onClose={closeTutorial} />
     </HashRouter>
   );
 };
