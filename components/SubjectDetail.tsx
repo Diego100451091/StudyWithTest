@@ -202,15 +202,11 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
             <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{t.attempts}</p>
             <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">{totalAttempts}</p>
          </div>
-         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm relative">
-            <div 
-              className={`cursor-pointer ${failedIdsInSubject.length > 0 ? 'hover:bg-amber-50 dark:hover:bg-amber-900/10' : ''} transition-colors rounded-lg p-2 -m-2`}
-              onClick={() => failedIdsInSubject.length > 0 && openModeSelector('failed')}
-            >
-              <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{t.failedQuestions}</p>
-              <div className="flex items-center justify-between">
-                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{failedIdsInSubject.length}</p>
-              </div>
+         <div className={`bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm relative transition-colors ${failedIdsInSubject.length > 0 ? 'cursor-pointer hover:border-amber-300 dark:hover:border-amber-500' : ''}`} onClick={() => failedIdsInSubject.length > 0 && openModeSelector('failed')}>
+            <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{t.failedQuestions}</p>
+            <div className="flex items-center justify-between">
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{failedIdsInSubject.length}</p>
+                {failedIdsInSubject.length > 0 && <Play className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
             </div>
             {failedIdsInSubject.length > 0 && (
               <div className="absolute top-2 right-2">
