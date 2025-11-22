@@ -4,6 +4,8 @@ import { ArrowLeft, Plus, Play, Trash2, Clock, HelpCircle, CheckCircle2, AlertTr
 import { UserData, Test, Subject, TestMode } from '../types';
 import { Language, getTranslation } from '../services/translations';
 import TestEditor from './TestEditor';
+import Modal from './Modal';
+import { useModal } from '../hooks/useModal';
 
 interface SubjectDetailProps {
   data: UserData;
@@ -20,6 +22,7 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
   const [editingTest, setEditingTest] = useState<Test | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const t = getTranslation(language);
+  const { modalState, showConfirm, closeModal } = useModal();
   
   const subject = data.subjects.find(s => s.id === id);
   const tests = data.tests.filter(t => t.subjectId === id);
@@ -257,7 +260,13 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
                     <button 
                         onClick={(e) => {
                             e.stopPropagation();
-                            if(window.confirm(t.deleteTest + '?')) onDeleteTest(test.id);
+                            showConfirm(
+                                t.confirm,
+                                t.deleteTest + '?',
+                                () => onDeleteTest(test.id),
+                                t.confirm,
+                                t.cancel
+                            );
                         }}
                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full"
                     >
@@ -275,6 +284,17 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
         )}
       </div>
       </div>
+      
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+      />
     </>
   );
 };

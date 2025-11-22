@@ -530,15 +530,15 @@ export const useStore = () => {
     a.click();
   };
 
-  const importData = (jsonData: string) => {
+  const importData = (jsonData: string, onSuccess?: () => void, onError?: (message: string) => void) => {
     try {
       const parsed = JSON.parse(jsonData);
       // Basic validation
       if (!parsed.subjects || !parsed.tests) throw new Error("Invalid format");
       setData({ ...INITIAL_DATA, ...parsed });
-      alert("Data imported successfully!");
+      if (onSuccess) onSuccess();
     } catch (e) {
-      alert("Failed to import data. Invalid JSON.");
+      if (onError) onError("Failed to import data. Invalid JSON.");
     }
   };
 

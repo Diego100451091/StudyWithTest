@@ -3,6 +3,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { UserData, TestResult, TestMode } from '../types';
 import { Language, getTranslation, getTestModeTranslation } from '../services/translations';
 import { Calendar, Target, Clock, Trash2, Eye, X, Check } from 'lucide-react';
+import Modal from './Modal';
+import { useModal } from '../hooks/useModal';
 
 interface HistoryViewProps {
   data: UserData;
@@ -17,11 +19,16 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
     .sort((a, b) => a.date - b.date);
   const t = getTranslation(language);
   const [viewingResultId, setViewingResultId] = useState<string | null>(null);
+  const { modalState, showConfirm, closeModal } = useModal();
 
   const handleDelete = (id: string) => {
-    if (window.confirm(t.deleteResultConfirm)) {
-      onDeleteResult(id);
-    }
+    showConfirm(
+      t.confirm,
+      t.deleteResultConfirm,
+      () => onDeleteResult(id),
+      t.confirm,
+      t.cancel
+    );
   };
 
   const toggleViewer = (id: string) => {
@@ -299,6 +306,17 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
             </div>
          </>
        )}
+       
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+      />
     </div>
   );
 };

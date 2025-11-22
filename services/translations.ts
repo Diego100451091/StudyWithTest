@@ -230,6 +230,15 @@ export interface Translations {
   exportButton: string;
   importButton: string;
   accountSettings: string;
+  
+  // Modals
+  confirm: string;
+  warning: string;
+  error: string;
+  success: string;
+  dataImported: string;
+  invalidJSON: string;
+  noQuestionsFound: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -463,6 +472,15 @@ export const translations: Record<Language, Translations> = {
     exportButton: 'Exportar Datos',
     importButton: 'Importar Datos',
     accountSettings: 'Configuración de Cuenta',
+    
+    // Modals
+    confirm: 'Confirmar',
+    warning: 'Advertencia',
+    error: 'Error',
+    success: 'Éxito',
+    dataImported: 'Datos importados correctamente',
+    invalidJSON: 'Error al importar datos. JSON inválido.',
+    noQuestionsFound: 'No se encontraron preguntas para la selección.',
   },
   
   en: {
@@ -695,6 +713,15 @@ export const translations: Record<Language, Translations> = {
     exportButton: 'Export Data',
     importButton: 'Import Data',
     accountSettings: 'Account Settings',
+    
+    // Modals
+    confirm: 'Confirm',
+    warning: 'Warning',
+    error: 'Error',
+    success: 'Success',
+    dataImported: 'Data imported successfully',
+    invalidJSON: 'Failed to import data. Invalid JSON.',
+    noQuestionsFound: 'No questions found for selection.',
   }
 };
 

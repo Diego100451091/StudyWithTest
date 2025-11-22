@@ -3,6 +3,8 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Flag, Check, X, Clock, RotateCcw, Save, CheckCircle2 } from 'lucide-react';
 import { UserData, Test, Question, QuestionResult, TestMode, TestResult } from '../types';
 import { Language, getTranslation } from '../services/translations';
+import Modal from './Modal';
+import { useModal } from '../hooks/useModal';
 
 interface TestRunnerProps {
   data: UserData;
@@ -16,6 +18,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const t = getTranslation(language);
+  const { modalState, showError, closeModal } = useModal();
 
   // Query Params
   const testIds = searchParams.get('tests')?.split(',') || [];
@@ -73,10 +76,10 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
         const shuffled = [...pool].sort(() => Math.random() - 0.5);
         setActiveQuestions(shuffled);
     } else {
-        alert("No questions found for selection.");
+        showError(t.error, t.noQuestionsFound);
         navigate(-1);
     }
-  }, [data, testIds, type, subjectId, navigate, activeQuestions.length]);
+  }, [data, testIds, type, subjectId, navigate, activeQuestions.length, showError, t]);
 
   const currentQuestion = activeQuestions[currentIndex];
   const isBookmarked = currentQuestion && data.bookmarkedQuestionIds.includes(currentQuestion.id);
@@ -294,6 +297,17 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
              </button>
           )}
       </div>
+      
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+      />
     </div>
   );
 };

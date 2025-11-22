@@ -13,6 +13,8 @@ import { AuthModal } from './components/AuthModal';
 import Logo from './components/Logo';
 import { useStore } from './services/store';
 import { getTranslation } from './services/translations';
+import Modal from './components/Modal';
+import { useModal } from './hooks/useModal';
 
 const App: React.FC = () => {
   const { 
@@ -48,17 +50,21 @@ const App: React.FC = () => {
   } = useStore();
 
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { modalState, showSuccess, showError, closeModal } = useModal();
+  const t = getTranslation(language || 'es');
 
   // Listen for import event from Layout
   useEffect(() => {
     const handleImportEvent = (e: any) => {
-        importData(e.detail);
+        importData(
+          e.detail,
+          () => showSuccess(t.success, t.dataImported),
+          (message) => showError(t.error, message)
+        );
     };
     window.addEventListener('import-data', handleImportEvent);
     return () => window.removeEventListener('import-data', handleImportEvent);
-  }, [importData]);
-
-  const t = getTranslation(language || 'es');
+  }, [importData, showSuccess, showError, t]);
 
   if (!loaded) {
     return (
@@ -191,6 +197,17 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+      
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+      />
     </HashRouter>
   );
 };

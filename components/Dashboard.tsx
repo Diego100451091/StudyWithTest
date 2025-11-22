@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Plus, MoreVertical, Edit2, Trash2, Book, ArrowRight, AlertCircle } from 'lucide-react';
 import { Subject, COLORS, UserData, Test } from '../types';
 import { Language, getTranslation } from '../services/translations';
+import Modal from './Modal';
+import { useModal } from '../hooks/useModal';
 
 interface DashboardProps {
   data: UserData;
@@ -17,6 +19,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, language, onAddSubject, onU
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [formData, setFormData] = useState<Partial<Subject>>({ name: '', description: '', color: COLORS[0] });
   const t = getTranslation(language);
+  const { modalState, showConfirm, closeModal } = useModal();
 
   const openCreate = () => {
     setEditingSubject(null);
@@ -33,9 +36,13 @@ const Dashboard: React.FC<DashboardProps> = ({ data, language, onAddSubject, onU
 
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
-    if(window.confirm(t.deleteConfirm)) {
-      onDeleteSubject(id);
-    }
+    showConfirm(
+      t.confirm,
+      t.deleteConfirm,
+      () => onDeleteSubject(id),
+      t.confirm,
+      t.cancel
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -214,6 +221,17 @@ const Dashboard: React.FC<DashboardProps> = ({ data, language, onAddSubject, onU
           </div>
         </div>
       )}
+      
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+      />
     </div>
   );
 };

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Copy, Check, FileJson, ArrowRight, AlertCircle } from 'lucide-react';
 import { UserData, Subject, Test, Question } from '../types';
 import { Language, getTranslation } from '../services/translations';
+import Modal from './Modal';
+import { useModal } from '../hooks/useModal';
 
 interface AIToolsProps {
   subjects: Subject[];
@@ -13,6 +15,7 @@ const AITools: React.FC<AIToolsProps> = ({ subjects, language, onImportTest }) =
   const [step, setStep] = useState<'prompt' | 'import'>('prompt');
   const [copied, setCopied] = useState(false);
   const t = getTranslation(language);
+  const { modalState, showSuccess, closeModal } = useModal();
   
   // Form State
   const [config, setConfig] = useState({
@@ -152,7 +155,7 @@ Be accurate and preserve the original content as much as possible.`;
       };
 
       onImportTest(newTest);
-      alert(t.importSuccess);
+      showSuccess(t.success, t.importSuccess);
       setJsonInput('');
       // Optional: navigate away
     } catch (err: any) {
@@ -377,6 +380,17 @@ Be accurate and preserve the original content as much as possible.`;
           )}
         </div>
       </div>
+      
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+      />
     </div>
   );
 };
