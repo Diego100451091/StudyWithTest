@@ -353,17 +353,33 @@ export const useStore = () => {
         return;
       }
 
+      // Check if local data is essentially empty (no real content)
+      const hasLocalContent = data.subjects.length > 0 || data.tests.length > 0 || data.results.length > 0;
+      
       // Calculate local checksum
       const localChecksum = firebaseService.calculateChecksum(data);
       console.log('%c[SYNC] checkAndSync: Comparing checksums', 'color: #3b82f6; font-weight: bold;', {
         local: localChecksum,
         firebase: firebaseData.checksum,
-        match: localChecksum === firebaseData.checksum
+        match: localChecksum === firebaseData.checksum,
+        hasLocalContent
       });
 
       if (localChecksum !== firebaseData.checksum) {
+        // If local data is essentially empty, just take cloud data without showing conflict
+        if (!hasLocalContent) {
+          console.log('%c[SYNC] checkAndSync: No local content, taking cloud data directly', 'color: #10b981; font-weight: bold;');
+          setData(firebaseData.data);
+          const now = new Date().toISOString();
+          setLastSync(now);
+          localStorage.setItem(LAST_SYNC_KEY, now);
+          localStorage.removeItem(STORAGE_KEY);
+          setInitialSyncDone(true);
+          return;
+        }
+        
         console.log('%c[SYNC] checkAndSync: Data conflict detected', 'color: #f59e0b; font-weight: bold;');
-        // Data conflict detected
+        // Data conflict detected with actual local content
         setConflictData({
           local: data,
           firebase: firebaseData.data,

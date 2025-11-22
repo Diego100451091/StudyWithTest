@@ -144,13 +144,6 @@ export const DataConflictModal: React.FC<DataConflictModalProps> = ({
             </div>
           </div>
 
-          {/* Cancel Button */}
-          <button
-            onClick={onClose}
-            className="w-full py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            {t.cancel}
-          </button>
         </div>
       </div>
     </div>
