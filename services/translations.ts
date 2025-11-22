@@ -86,10 +86,14 @@ export interface Translations {
   // AI Tools
   configurePrompt: string;
   configureDescription: string;
+  mode: string;
+  generateMode: string;
+  extractMode: string;
   topicContext: string;
   testLanguage: string;
   difficulty: string;
   numQuestions: string;
+  allQuestions: string;
   optionsPerQuestion: string;
   generatedPrompt: string;
   copyToClipboard: string;
@@ -283,10 +287,14 @@ export const translations: Record<Language, Translations> = {
     // AI Tools
     configurePrompt: 'Configura tu Prompt',
     configureDescription: 'Ajusta estos parámetros, copia el prompt y pégalo en ChatGPT, Claude o Gemini junto con tus apuntes o contenido PDF.',
+    mode: 'Modo',
+    generateMode: 'Generar Test',
+    extractMode: 'Extraer Test',
     topicContext: 'Tema / Contexto',
     testLanguage: 'Idioma del Test',
     difficulty: 'Dificultad',
     numQuestions: 'Número de Preguntas',
+    allQuestions: 'Todas',
     optionsPerQuestion: 'Opciones por Pregunta',
     generatedPrompt: 'Prompt Generado',
     copyToClipboard: 'Copiar al Portapapeles',
@@ -479,10 +487,14 @@ export const translations: Record<Language, Translations> = {
     // AI Tools
     configurePrompt: 'Configure your Prompt',
     configureDescription: 'Adjust these settings, copy the prompt, and paste it into ChatGPT, Claude, or Gemini along with your study notes or PDF content.',
+    mode: 'Mode',
+    generateMode: 'Generate Test',
+    extractMode: 'Extract Test',
     topicContext: 'Topic / Context',
     testLanguage: 'Test Language',
     difficulty: 'Difficulty',
     numQuestions: 'Number of Questions',
+    allQuestions: 'All',
     optionsPerQuestion: 'Options per Question',
     generatedPrompt: 'Generated Prompt',
     copyToClipboard: 'Copy to Clipboard',

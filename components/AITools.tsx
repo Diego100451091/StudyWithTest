@@ -16,7 +16,9 @@ const AITools: React.FC<AIToolsProps> = ({ subjects, language, onImportTest }) =
   
   // Form State
   const [config, setConfig] = useState({
+    testMode: 'generate' as 'generate' | 'extract',
     numQuestions: 10,
+    allQuestions: false,
     difficulty: language === 'es' ? 'Intermedio' : 'Intermediate',
     numOptions: 4,
     focusTopic: '',
@@ -29,10 +31,11 @@ const AITools: React.FC<AIToolsProps> = ({ subjects, language, onImportTest }) =
   const [error, setError] = useState<string | null>(null);
 
   const generatePrompt = () => {
-    return `Act as a professor. I need you to generate a multiple-choice test for me to study. 
+    if (config.testMode === 'generate') {
+      return `Act as a professor. I need you to generate a multiple-choice test for me to study. 
 Create a JSON object representing a test IN ${config.language.toUpperCase()}.
 Topic: ${config.focusTopic || 'General knowledge of the text provided'}
-Number of questions: ${config.numQuestions}
+Number of questions: ${config.allQuestions ? 'as many as appropriate based on the content' : config.numQuestions}
 Difficulty: ${config.difficulty}
 Number of options per question: ${config.numOptions}
 Language: ${config.language}
@@ -55,6 +58,46 @@ Strictly follow this JSON structure (do not add markdown code blocks, just the r
 }
 
 Ensure the content is accurate and educational.`;
+    } else {
+      // Extract mode
+      const topicFilter = config.focusTopic 
+        ? `Focus only on questions related to: ${config.focusTopic}` 
+        : 'Extract all questions found in the text';
+      
+      const questionCount = config.allQuestions 
+        ? 'Extract ALL questions found in the document' 
+        : `Extract up to ${config.numQuestions} questions`;
+
+      return `Act as an expert in extracting structured information from documents. I need you to extract existing multiple-choice test questions from the provided text/PDF.
+
+Your task: Extract test questions that are already present in the document and convert them to JSON format IN ${config.language.toUpperCase()}.
+
+Instructions:
+- ${questionCount}
+- ${topicFilter}
+- Maintain the original question text, options, and correct answers as they appear in the document
+- If explanations are provided in the text, include them; otherwise, provide a brief explanation based on context
+- Language: ${config.language}
+
+IMPORTANT: Extract ALL content (questions, options, answers, and explanations) exactly as they appear in ${config.language}.
+
+Strictly follow this JSON structure (do not add markdown code blocks, just the raw JSON or JSON inside a code block):
+
+{
+  "title": "Extracted Test Questions",
+  "description": "Questions extracted from the provided document",
+  "questions": [
+    {
+      "text": "Question text exactly as it appears...",
+      "options": ["Option A", "Option B", ...],
+      "correctOptionIndex": 0, // Integer (0-based index of correct option)
+      "explanation": "Explanation from the document or brief context."
+    }
+  ]
+}
+
+Be accurate and preserve the original content as much as possible.`;
+    }
   };
 
   const handleCopy = () => {
@@ -145,12 +188,26 @@ Ensure the content is accurate and educational.`;
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.mode}</label>
+                   <select 
+                      value={config.testMode}
+                      onChange={e => setConfig({...config, testMode: e.target.value as 'generate' | 'extract'})}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
+                   >
+                      <option value="generate">{t.generateMode}</option>
+                      <option value="extract">{t.extractMode}</option>
+                   </select>
+                </div>
+                <div>
                    <label className="block text-sm font-medium text-slate-700 mb-1">{t.topicContext}</label>
                    <input 
                       type="text"
                       value={config.focusTopic}
                       onChange={e => setConfig({...config, focusTopic: e.target.value})}
-                      placeholder={language === 'es' ? 'ej. Capítulo 3 del Libro de Historia' : 'e.g. Chapter 3 of History Book'}
+                      placeholder={config.testMode === 'generate' 
+                        ? (language === 'es' ? 'ej. Capítulo 3 del Libro de Historia' : 'e.g. Chapter 3 of History Book')
+                        : (language === 'es' ? 'ej. Solo preguntas sobre la Guerra Civil' : 'e.g. Only questions about the Civil War')
+                      }
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                    />
                 </div>
@@ -174,42 +231,60 @@ Ensure the content is accurate and educational.`;
                       <option>Arabic</option>
                    </select>
                 </div>
-                <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.difficulty}</label>
-                   <select 
-                      value={config.difficulty}
-                      onChange={e => setConfig({...config, difficulty: e.target.value})}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
-                   >
-                      <option>{t.easy}</option>
-                      <option>{t.intermediate}</option>
-                      <option>{t.hard}</option>
-                      <option>{t.expert}</option>
-                   </select>
-                </div>
+                {config.testMode === 'generate' && (
+                  <div>
+                     <label className="block text-sm font-medium text-slate-700 mb-1">{t.difficulty}</label>
+                     <select 
+                        value={config.difficulty}
+                        onChange={e => setConfig({...config, difficulty: e.target.value})}
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
+                     >
+                        <option>{t.easy}</option>
+                        <option>{t.intermediate}</option>
+                        <option>{t.hard}</option>
+                        <option>{t.expert}</option>
+                     </select>
+                  </div>
+                )}
                 <div>
                    <label className="block text-sm font-medium text-slate-700 mb-1">{t.numQuestions}</label>
-                   <input 
-                      type="number"
-                      min="1" max="50"
-                      value={config.numQuestions}
-                      onChange={e => setConfig({...config, numQuestions: parseInt(e.target.value)})}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                   />
+                   <div className="flex items-center space-x-3">
+                     <input 
+                        type="number"
+                        min="1" max="50"
+                        value={config.numQuestions}
+                        onChange={e => setConfig({...config, numQuestions: parseInt(e.target.value), allQuestions: false})}
+                        disabled={config.allQuestions}
+                        className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none disabled:bg-slate-100 disabled:text-slate-500"
+                     />
+                     {config.testMode === 'extract' && (
+                       <label className="flex items-center space-x-2 cursor-pointer">
+                         <input 
+                           type="checkbox"
+                           checked={config.allQuestions}
+                           onChange={e => setConfig({...config, allQuestions: e.target.checked})}
+                           className="w-4 h-4 text-blue-600 bg-white border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-600 checked:border-blue-600"
+                         />
+                         <span className="text-sm font-medium text-slate-700">{t.allQuestions}</span>
+                       </label>
+                     )}
+                   </div>
                 </div>
-                <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.optionsPerQuestion}</label>
-                   <select 
-                      value={config.numOptions}
-                      onChange={e => setConfig({...config, numOptions: parseInt(e.target.value)})}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
-                   >
-                      <option value={2}>2 (True/False style)</option>
-                      <option value={3}>3</option>
-                      <option value={4}>4 (Standard)</option>
-                      <option value={5}>5</option>
-                   </select>
-                </div>
+                {config.testMode === 'generate' && (
+                  <div>
+                     <label className="block text-sm font-medium text-slate-700 mb-1">{t.optionsPerQuestion}</label>
+                     <select 
+                        value={config.numOptions}
+                        onChange={e => setConfig({...config, numOptions: parseInt(e.target.value)})}
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
+                     >
+                        <option value={2}>2 (True/False style)</option>
+                        <option value={3}>3</option>
+                        <option value={4}>4 (Standard)</option>
+                        <option value={5}>5</option>
+                     </select>
+                  </div>
+                )}
               </div>
 
               <div className="relative mt-6">
