@@ -68,13 +68,17 @@ const App: React.FC = () => {
     return () => window.removeEventListener('import-data', handleImportEvent);
   }, [importData, showSuccess, showError, t]);
 
-  if (!loaded) {
+  if (!loaded || isAuthLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-slate-50">
+      <div className="flex flex-col items-center justify-center h-screen bg-slate-50 dark:bg-slate-900">
         <div className="animate-pulse mb-4">
           <Logo size={80} showText={false} />
         </div>
-        <div className="text-lg text-slate-400">{t.loading}</div>
+        <h1 className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-6">StudyWithTest</h1>
+        <div className="text-lg text-slate-600 dark:text-slate-400">
+          {isAuthLoading ? (firebaseAuth.isSignedIn ? t.loadingData : t.signIn) : t.loading}
+        </div>
+        <div className="text-sm text-slate-500 dark:text-slate-500 mt-2">{t.pleaseWait}</div>
       </div>
     );
   }
@@ -185,21 +189,6 @@ const App: React.FC = () => {
           onSelectCloud={resolveConflictKeepFirebase}
           onClose={() => {}}
         />
-      )}
-      
-      {/* Overlay de loading durante autenticación/logout/descarga */}
-      {isAuthLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-[9999] flex items-center justify-center">
-          <div className="bg-white rounded-lg p-8 shadow-2xl text-center">
-            <div className="animate-pulse mb-4 mx-auto flex justify-center">
-              <Logo size={64} showText={false} />
-            </div>
-            <p className="text-lg font-semibold text-slate-700">
-              {firebaseAuth.isSignedIn ? t.loadingData : t.signIn}
-            </p>
-            <p className="text-sm text-slate-500 mt-2">{t.pleaseWait}</p>
-          </div>
-        </div>
       )}
       
       <Modal

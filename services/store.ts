@@ -117,51 +117,61 @@ export const useStore = () => {
 
   // Load from storage on mount
   useEffect(() => {
-    try {
-      // Si el usuario ya está autenticado, NO cargar de localStorage
-      // Los datos se cargarán desde Firebase en el useEffect de sincronización
-      const wasAuthenticated = localStorage.getItem(SESSION_AUTH_KEY) === 'true';
-      
-      if (!wasAuthenticated) {
-        console.log('%c[STORE] Loading data from localStorage (user not previously authenticated)', 'color: #8b5cf6; font-weight: bold;');
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          setData({ ...INITIAL_DATA, ...parsed });
+    const initializeStore = async () => {
+      try {
+        // Si el usuario ya está autenticado, NO cargar de localStorage
+        // Los datos se cargarán desde Firebase en el useEffect de sincronización
+        const wasAuthenticated = localStorage.getItem(SESSION_AUTH_KEY) === 'true';
+        
+        if (!wasAuthenticated) {
+          console.log('%c[STORE] Loading data from localStorage (user not previously authenticated)', 'color: #8b5cf6; font-weight: bold;');
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            setData({ ...INITIAL_DATA, ...parsed });
+          }
+        } else {
+          console.log('%c[STORE] Skipping localStorage load (user already authenticated - data will come from Firebase)', 'color: #94a3b8; font-weight: bold;');
+          // Usuario ya autenticado - marcar que se está cargando
+          setIsAuthLoading(true);
         }
-      } else {
-        console.log('%c[STORE] Skipping localStorage load (user already authenticated - data will come from Firebase)', 'color: #94a3b8; font-weight: bold;');
-      }
-      
-      // Check if this is the first visit
-      const tutorialCompleted = localStorage.getItem(TUTORIAL_KEY);
-      if (!tutorialCompleted) {
-        setShowTutorial(true);
-      }
-      
-      // Load language preference
-      const savedLanguage = localStorage.getItem(LANGUAGE_KEY) as Language;
-      if (savedLanguage && (savedLanguage === 'es' || savedLanguage === 'en')) {
-        setLanguage(savedLanguage);
-      }
+        
+        // Check if this is the first visit
+        const tutorialCompleted = localStorage.getItem(TUTORIAL_KEY);
+        if (!tutorialCompleted) {
+          setShowTutorial(true);
+        }
+        
+        // Load language preference
+        const savedLanguage = localStorage.getItem(LANGUAGE_KEY) as Language;
+        if (savedLanguage && (savedLanguage === 'es' || savedLanguage === 'en')) {
+          setLanguage(savedLanguage);
+        }
 
-      // Load dark mode preference
-      const savedDarkMode = localStorage.getItem(DARK_MODE_KEY);
-      if (savedDarkMode === 'true') {
-        setDarkMode(true);
-        document.documentElement.classList.add('dark');
-      }
+        // Load dark mode preference
+        const savedDarkMode = localStorage.getItem(DARK_MODE_KEY);
+        if (savedDarkMode === 'true') {
+          setDarkMode(true);
+          document.documentElement.classList.add('dark');
+        }
 
-      // Load last sync time
-      const savedLastSync = localStorage.getItem(LAST_SYNC_KEY);
-      if (savedLastSync) {
-        setLastSync(savedLastSync);
+        // Load last sync time
+        const savedLastSync = localStorage.getItem(LAST_SYNC_KEY);
+        if (savedLastSync) {
+          setLastSync(savedLastSync);
+        }
+      } catch (e) {
+        console.error("Failed to load data", e);
+      } finally {
+        // Solo marcar como loaded si NO hay autenticación pendiente
+        const wasAuthenticated = localStorage.getItem(SESSION_AUTH_KEY) === 'true';
+        if (!wasAuthenticated) {
+          setLoaded(true);
+        }
       }
-    } catch (e) {
-      console.error("Failed to load data", e);
-    } finally {
-      setLoaded(true);
-    }
+    };
+    
+    initializeStore();
   }, []);
 
   // Save to storage whenever data changes
@@ -309,6 +319,7 @@ export const useStore = () => {
       await new Promise(resolve => setTimeout(resolve, DATA_COMPLETION_DELAY));
       setSyncing(false);
       setIsAuthLoading(false);
+      setLoaded(true); // Marcar como loaded cuando termine la carga
       console.log('%c[SYNC] downloadAndApply: Finished', 'color: #3b82f6; font-weight: bold;');
     }
   };
@@ -406,6 +417,7 @@ export const useStore = () => {
     } finally {
       setSyncing(false);
       setIsAuthLoading(false);
+      setLoaded(true); // Marcar como loaded cuando termine la verificación
       console.log('%c[SYNC] checkAndSync: Finished', 'color: #3b82f6; font-weight: bold;');
     }
   };
@@ -666,6 +678,7 @@ export const useStore = () => {
       console.error('Failed to resolve conflict:', error);
     } finally {
       setSyncing(false);
+      setLoaded(true); // Marcar como loaded cuando se resuelva el conflicto
     }
   };
 
@@ -692,6 +705,7 @@ export const useStore = () => {
       console.error('Failed to resolve conflict:', error);
     } finally {
       setSyncing(false);
+      setLoaded(true); // Marcar como loaded cuando se resuelva el conflicto
     }
   };
 
