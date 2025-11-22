@@ -6,6 +6,7 @@ import SubjectDetail from './components/SubjectDetail';
 import TestRunner from './components/TestRunner';
 import AITools from './components/AITools';
 import HistoryView from './components/HistoryView';
+import Settings from './components/Settings';
 import Tutorial from './components/Tutorial';
 import { DataConflictModal } from './components/DataConflictModal';
 import { AuthModal } from './components/AuthModal';
@@ -133,6 +134,17 @@ const App: React.FC = () => {
           <Route 
             path="/history" 
             element={<HistoryView data={data} language={language} />} 
+          />
+          <Route 
+            path="/settings" 
+            element={
+              <Settings 
+                language={language} 
+                firebaseAuth={firebaseAuth}
+                onExport={exportData}
+                onImport={() => { /* Triggered via ref in Settings */ }}
+              />
+            } 
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

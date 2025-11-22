@@ -198,6 +198,28 @@ export interface Translations {
   minutesAbbr: string;
   hoursAbbr: string;
   connected: string;
+  
+  // Settings
+  settings: string;
+  profileSettings: string;
+  updateProfile: string;
+  updatePassword: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+  updatePasswordButton: string;
+  updateProfileButton: string;
+  passwordUpdated: string;
+  profileUpdated: string;
+  passwordUpdateError: string;
+  profileUpdateError: string;
+  newPasswordMismatch: string;
+  dataManagementSettings: string;
+  exportDescription: string;
+  importDescription: string;
+  exportButton: string;
+  importButton: string;
+  accountSettings: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -375,7 +397,7 @@ export const translations: Record<Language, Translations> = {
     userNotFound: 'Usuario no encontrado',
     syncWithFirebase: 'Sincronizar',
     syncing: 'Sincronizando...',
-    syncSuccess: '¡Sincronizado correctamente!',
+    syncSuccess: 'Sincronizado',
     syncError: 'Error al sincronizar',
     lastSync: 'Última sincronización',
     notSynced: 'No sincronizado',
@@ -399,6 +421,28 @@ export const translations: Record<Language, Translations> = {
     minutesAbbr: 'min',
     hoursAbbr: 'h',
     connected: 'Conectado',
+    
+    // Settings
+    settings: 'Configuración',
+    profileSettings: 'Configuración de Perfil',
+    updateProfile: 'Actualizar Perfil',
+    updatePassword: 'Actualizar Contraseña',
+    currentPassword: 'Contraseña Actual',
+    newPassword: 'Nueva Contraseña',
+    confirmNewPassword: 'Confirmar Nueva Contraseña',
+    updatePasswordButton: 'Actualizar Contraseña',
+    updateProfileButton: 'Actualizar Perfil',
+    passwordUpdated: 'Contraseña actualizada correctamente',
+    profileUpdated: 'Perfil actualizado correctamente',
+    passwordUpdateError: 'Error al actualizar la contraseña',
+    profileUpdateError: 'Error al actualizar el perfil',
+    newPasswordMismatch: 'Las nuevas contraseñas no coinciden',
+    dataManagementSettings: 'Gestión de Datos',
+    exportDescription: 'Exporta todos tus datos (asignaturas, tests, resultados) a un archivo JSON como respaldo.',
+    importDescription: 'Importa datos desde un archivo JSON previamente exportado. Esto sobrescribirá tus datos actuales.',
+    exportButton: 'Exportar Datos',
+    importButton: 'Importar Datos',
+    accountSettings: 'Configuración de Cuenta',
   },
   
   en: {
@@ -575,7 +619,7 @@ export const translations: Record<Language, Translations> = {
     userNotFound: 'User not found',
     syncWithFirebase: 'Sync',
     syncing: 'Syncing...',
-    syncSuccess: 'Synced successfully!',
+    syncSuccess: 'Syncronized',
     syncError: 'Sync error',
     lastSync: 'Last sync',
     notSynced: 'Not synced',
@@ -599,6 +643,28 @@ export const translations: Record<Language, Translations> = {
     minutesAbbr: 'min',
     hoursAbbr: 'h',
     connected: 'Connected',
+    
+    // Settings
+    settings: 'Settings',
+    profileSettings: 'Profile Settings',
+    updateProfile: 'Update Profile',
+    updatePassword: 'Update Password',
+    currentPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmNewPassword: 'Confirm New Password',
+    updatePasswordButton: 'Update Password',
+    updateProfileButton: 'Update Profile',
+    passwordUpdated: 'Password updated successfully',
+    profileUpdated: 'Profile updated successfully',
+    passwordUpdateError: 'Error updating password',
+    profileUpdateError: 'Error updating profile',
+    newPasswordMismatch: 'New passwords do not match',
+    dataManagementSettings: 'Data Management',
+    exportDescription: 'Export all your data (subjects, tests, results) to a JSON file as backup.',
+    importDescription: 'Import data from a previously exported JSON file. This will overwrite your current data.',
+    exportButton: 'Export Data',
+    importButton: 'Import Data',
+    accountSettings: 'Account Settings',
   }
 };
 

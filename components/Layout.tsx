@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Menu, X, Home, History, Wand2, Download, Upload, Settings, HelpCircle, Languages, Cloud, LogOut, RefreshCw, AlertCircle } from 'lucide-react';
+import { BookOpen, Menu, X, Home, History, Wand2, Settings as SettingsIcon, HelpCircle, Languages, Cloud, LogOut, RefreshCw, AlertCircle } from 'lucide-react';
 import { Language, getTranslation } from '../services/translations';
 import { FirebaseAuthState, firebaseService } from '../services/firebase';
 import Logo from './Logo';
@@ -65,31 +65,10 @@ const Layout: React.FC<LayoutProps> = ({
     { path: '/', label: t.subjects, icon: Home },
     { path: '/history', label: t.history, icon: History },
     { path: '/ai-tools', label: t.aiTools, icon: Wand2 },
+    { path: '/settings', label: t.settings, icon: SettingsIcon },
   ];
 
   const isActive = (path: string) => location.pathname === path;
-
-  const FileInput = React.useRef<HTMLInputElement>(null);
-
-  const handleImportClick = () => {
-    FileInput.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        // Logic handled in App.tsx but triggered here
-        const content = event.target?.result as string;
-        // We need to pass this up, but for now let's just reload page after prompt
-        // Actually, cleaner to pass a callback prop "onImport(content)" but for simplicity with file input:
-        const storeEvent = new CustomEvent('import-data', { detail: content });
-        window.dispatchEvent(storeEvent); 
-      };
-      reader.readAsText(file);
-    }
-  };
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -134,10 +113,9 @@ const Layout: React.FC<LayoutProps> = ({
           ))}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100 bg-slate-50 space-y-4">
-          {/* Firebase Section */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100 bg-slate-50">
+          {/* User Session Section */}
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">Firebase Sync</p>
             {!firebaseService.isConfigured() ? (
               <div className="px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <div className="flex items-start space-x-2">
@@ -149,35 +127,23 @@ const Layout: React.FC<LayoutProps> = ({
                 </div>
               </div>
             ) : firebaseAuth.isSignedIn ? (
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-md border border-green-200">
-                  <Cloud className="w-4 h-4 text-green-600" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-slate-900 font-medium truncate">
-                      {firebaseAuth.user?.email || t.connected}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {syncing ? t.syncing : `${t.lastSync}: ${formatLastSync(lastSync)}`}
-                    </p>
-                  </div>
+              <div className="flex items-center space-x-2 px-4 py-3 bg-white rounded-md border border-slate-200 hover:border-slate-300 transition-colors">
+                <Cloud className={`w-4 h-4 flex-shrink-0 ${syncing ? 'text-blue-500 animate-pulse' : 'text-green-600'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-slate-900 font-medium truncate">
+                    {firebaseAuth.user?.name || t.connected}
+                  </p>
+                  <p className={`text-xs ${syncing ? 'text-blue-600' : 'text-green-600'}`}>
+                    {syncing ? t.syncing : t.syncSuccess}
+                  </p>
                 </div>
-                <div className="flex space-x-2">
-                  <button 
-                    onClick={onSyncWithFirebase}
-                    disabled={syncing}
-                    className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 text-xs text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors disabled:opacity-50"
-                  >
-                    <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
-                    <span>{t.syncWithFirebase}</span>
-                  </button>
-                  <button 
-                    onClick={onSignOutFromGoogle}
-                    className="flex items-center justify-center px-3 py-2 text-xs text-slate-600 hover:bg-white hover:text-red-600 rounded-md transition-colors"
-                    title={t.signOut}
-                  >
-                    <LogOut className="w-3 h-3" />
-                  </button>
-                </div>
+                <button 
+                  onClick={onSignOutFromGoogle}
+                  className="flex items-center justify-center p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors flex-shrink-0"
+                  title={t.signOut}
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
             ) : (
               <button 
@@ -190,31 +156,6 @@ const Layout: React.FC<LayoutProps> = ({
             )}
           </div>
 
-          {/* Data Management Section */}
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">{t.dataManagement}</p>
-            <button 
-              onClick={onExport}
-              className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              <span>{t.exportData}</span>
-            </button>
-            <button 
-              onClick={handleImportClick}
-              className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
-            >
-              <Upload className="w-4 h-4" />
-              <span>{t.importData}</span>
-            </button>
-            <input 
-              ref={FileInput}
-              type="file"
-              accept=".json"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </div>
         </div>
       </aside>
 

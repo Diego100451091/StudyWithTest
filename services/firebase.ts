@@ -6,6 +6,9 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateProfile,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
   User 
 } from 'firebase/auth';
 import { 
@@ -169,6 +172,60 @@ class FirebaseService {
     if (!this.app) return null;
     const auth = getAuth(this.app);
     return auth.currentUser;
+  }
+
+  /**
+   * Update user profile (display name)
+   */
+  async updateUserProfile(displayName: string): Promise<void> {
+    if (!this.app) {
+      throw new Error('Firebase not initialized');
+    }
+
+    const auth = getAuth(this.app);
+    const user = auth.currentUser;
+    
+    if (!user) {
+      throw new Error('Not signed in');
+    }
+
+    try {
+      await updateProfile(user, { displayName });
+      // Update auth state to reflect changes
+      this.updateAuthState(user);
+    } catch (error: any) {
+      console.error('Update profile error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user password
+   * Requires reauthentication for security
+   */
+  async updateUserPassword(currentPassword: string, newPassword: string): Promise<void> {
+    if (!this.app) {
+      throw new Error('Firebase not initialized');
+    }
+
+    const auth = getAuth(this.app);
+    const user = auth.currentUser;
+    
+    if (!user || !user.email) {
+      throw new Error('Not signed in');
+    }
+
+    try {
+      // Reauthenticate user first
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+      
+      // Update password
+      await updatePassword(user, newPassword);
+    } catch (error: any) {
+      console.error('Update password error:', error);
+      throw error;
+    }
   }
 
   /**
