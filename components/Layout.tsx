@@ -46,11 +46,11 @@ const Layout: React.FC<LayoutProps> = ({
       const diffMs = now.getTime() - date.getTime();
       const diffMins = Math.floor(diffMs / 60000);
       
-      if (diffMins < 1) return language === 'es' ? 'Ahora' : 'Just now';
-      if (diffMins < 60) return `${diffMins} ${language === 'es' ? 'min' : 'min'}`;
+      if (diffMins < 1) return t.justNow;
+      if (diffMins < 60) return `${diffMins} ${t.minutesAbbr}`;
       
       const diffHours = Math.floor(diffMins / 60);
-      if (diffHours < 24) return `${diffHours} ${language === 'es' ? 'h' : 'h'}`;
+      if (diffHours < 24) return `${diffHours} ${t.hoursAbbr}`;
       
       return date.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { 
         month: 'short', 
@@ -154,7 +154,7 @@ const Layout: React.FC<LayoutProps> = ({
                   <Cloud className="w-4 h-4 text-green-600" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-slate-900 font-medium truncate">
-                      {firebaseAuth.user?.email || 'Connected'}
+                      {firebaseAuth.user?.email || t.connected}
                     </p>
                     <p className="text-xs text-slate-500">
                       {syncing ? t.syncing : `${t.lastSync}: ${formatLastSync(lastSync)}`}

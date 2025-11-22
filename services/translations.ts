@@ -184,6 +184,16 @@ export interface Translations {
   lastModified: string;
   firebaseNotConfigured: string;
   firebaseNotConfiguredDesc: string;
+  pleaseWait: string;
+  loadingData: string;
+  authError: string;
+  invalidCredentials: string;
+  pleaseFillAllFields: string;
+  pleaseEnterName: string;
+  justNow: string;
+  minutesAbbr: string;
+  hoursAbbr: string;
+  connected: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -371,6 +381,16 @@ export const translations: Record<Language, Translations> = {
     lastModified: 'Última modificación',
     firebaseNotConfigured: 'Firebase no configurado',
     firebaseNotConfiguredDesc: 'Para habilitar la sincronización en la nube, configura Firebase en el archivo .env',
+    pleaseWait: 'Por favor espera',
+    loadingData: 'Cargando datos...',
+    authError: 'Error de autenticación. Inténtalo de nuevo.',
+    invalidCredentials: 'Credenciales inválidas. Verifica tu correo y contraseña.',
+    pleaseFillAllFields: 'Por favor, completa todos los campos',
+    pleaseEnterName: 'Por favor, ingresa tu nombre',
+    justNow: 'Ahora',
+    minutesAbbr: 'min',
+    hoursAbbr: 'h',
+    connected: 'Conectado',
   },
   
   en: {
@@ -557,6 +577,16 @@ export const translations: Record<Language, Translations> = {
     lastModified: 'Last modified',
     firebaseNotConfigured: 'Firebase not configured',
     firebaseNotConfiguredDesc: 'To enable cloud sync, configure Firebase in the .env file',
+    pleaseWait: 'Please wait',
+    loadingData: 'Loading data...',
+    authError: 'Authentication error. Please try again.',
+    invalidCredentials: 'Invalid credentials. Check your email and password.',
+    pleaseFillAllFields: 'Please fill all fields',
+    pleaseEnterName: 'Please enter your name',
+    justNow: 'Just now',
+    minutesAbbr: 'min',
+    hoursAbbr: 'h',
+    connected: 'Connected',
   }
 };
 

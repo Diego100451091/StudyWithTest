@@ -11,6 +11,7 @@ import { DataConflictModal } from './components/DataConflictModal';
 import { AuthModal } from './components/AuthModal';
 import Logo from './components/Logo';
 import { useStore } from './services/store';
+import { getTranslation } from './services/translations';
 
 const App: React.FC = () => {
   const { 
@@ -55,10 +56,15 @@ const App: React.FC = () => {
     return () => window.removeEventListener('import-data', handleImportEvent);
   }, [importData]);
 
+  const t = getTranslation(language || 'es');
+
   if (!loaded) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-slate-50 text-slate-400">
-        <div className="text-lg">Loading StudyWithTest...</div>
+      <div className="flex flex-col items-center justify-center h-screen bg-slate-50">
+        <div className="animate-pulse mb-4">
+          <Logo size={80} showText={false} />
+        </div>
+        <div className="text-lg text-slate-400">{t.loading}</div>
       </div>
     );
   }
@@ -162,11 +168,13 @@ const App: React.FC = () => {
       {isAuthLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-[9999] flex items-center justify-center">
           <div className="bg-white rounded-lg p-8 shadow-2xl text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-pulse mb-4 mx-auto flex justify-center">
+              <Logo size={64} showText={false} />
+            </div>
             <p className="text-lg font-semibold text-slate-700">
-              {firebaseAuth.isSignedIn ? 'Cargando datos...' : 'Iniciando sesión...'}
+              {firebaseAuth.isSignedIn ? t.loadingData : t.signIn}
             </p>
-            <p className="text-sm text-slate-500 mt-2">Por favor espera</p>
+            <p className="text-sm text-slate-500 mt-2">{t.pleaseWait}</p>
           </div>
         </div>
       )}
