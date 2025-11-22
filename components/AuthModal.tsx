@@ -30,7 +30,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     // Validations
     if (!email || !password) {
-      setError(language === 'es' ? 'Por favor completa todos los campos' : 'Please fill all fields');
+      setError(t.pleaseFillAllFields);
       return;
     }
 
@@ -46,7 +46,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     if (isSignUp) {
       if (!displayName) {
-        setError(language === 'es' ? 'Por favor ingresa tu nombre' : 'Please enter your name');
+        setError(t.pleaseEnterName);
         return;
       }
       if (password !== confirmPassword) {
@@ -79,9 +79,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       } else if (err.code === 'auth/weak-password') {
         setError(t.weakPassword);
       } else if (err.code === 'auth/invalid-credential') {
-        setError(language === 'es' ? 'Credenciales inválidas' : 'Invalid credentials');
+        setError(t.invalidCredentials);
       } else {
-        setError(err.message || (language === 'es' ? 'Error de autenticación' : 'Authentication error'));
+        setError(err.message || t.authError);
       }
     } finally {
       setLoading(false);

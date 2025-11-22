@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Menu, X, Home, History, Wand2, Download, Upload, Settings, HelpCircle, Languages, Cloud, LogOut, RefreshCw, AlertCircle } from 'lucide-react';
+import { BookOpen, Menu, X, Home, History, Wand2, Settings as SettingsIcon, HelpCircle, Languages, Cloud, LogOut, RefreshCw, AlertCircle, Moon, Sun } from 'lucide-react';
 import { Language, getTranslation } from '../services/translations';
 import { FirebaseAuthState, firebaseService } from '../services/firebase';
+import Logo from './Logo';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,7 +11,9 @@ interface LayoutProps {
   onImport: () => void;
   onOpenTutorial: () => void;
   onToggleLanguage: () => void;
+  onToggleDarkMode: () => void;
   language: Language;
+  darkMode: boolean;
   firebaseAuth: FirebaseAuthState;
   onShowAuthModal: () => void;
   onSignOutFromGoogle: () => void;
@@ -24,8 +27,10 @@ const Layout: React.FC<LayoutProps> = ({
   onExport, 
   onImport, 
   onOpenTutorial, 
-  onToggleLanguage, 
+  onToggleLanguage,
+  onToggleDarkMode,
   language,
+  darkMode,
   firebaseAuth,
   onShowAuthModal,
   onSignOutFromGoogle,
@@ -45,11 +50,11 @@ const Layout: React.FC<LayoutProps> = ({
       const diffMs = now.getTime() - date.getTime();
       const diffMins = Math.floor(diffMs / 60000);
       
-      if (diffMins < 1) return language === 'es' ? 'Ahora' : 'Just now';
-      if (diffMins < 60) return `${diffMins} ${language === 'es' ? 'min' : 'min'}`;
+      if (diffMins < 1) return t.justNow;
+      if (diffMins < 60) return `${diffMins} ${t.minutesAbbr}`;
       
       const diffHours = Math.floor(diffMins / 60);
-      if (diffHours < 24) return `${diffHours} ${language === 'es' ? 'h' : 'h'}`;
+      if (diffHours < 24) return `${diffHours} ${t.hoursAbbr}`;
       
       return date.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { 
         month: 'short', 
@@ -64,31 +69,10 @@ const Layout: React.FC<LayoutProps> = ({
     { path: '/', label: t.subjects, icon: Home },
     { path: '/history', label: t.history, icon: History },
     { path: '/ai-tools', label: t.aiTools, icon: Wand2 },
+    { path: '/settings', label: t.settings, icon: SettingsIcon },
   ];
 
   const isActive = (path: string) => location.pathname === path;
-
-  const FileInput = React.useRef<HTMLInputElement>(null);
-
-  const handleImportClick = () => {
-    FileInput.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        // Logic handled in App.tsx but triggered here
-        const content = event.target?.result as string;
-        // We need to pass this up, but for now let's just reload page after prompt
-        // Actually, cleaner to pass a callback prop "onImport(content)" but for simplicity with file input:
-        const storeEvent = new CustomEvent('import-data', { detail: content });
-        window.dispatchEvent(storeEvent); 
-      };
-      reader.readAsText(file);
-    }
-  };
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -102,16 +86,43 @@ const Layout: React.FC<LayoutProps> = ({
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-70 bg-white border-r border-slate-200 transform transition-transform duration-200 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-70 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transform transition-transform duration-200 ease-in-out
         lg:relative lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-slate-100">
-          <Link to="/" className="flex items-center space-x-2 text-primary font-bold text-xl">
-            <BookOpen className="w-6 h-6" />
-            <span>StudyWithTest</span>
+        {/* Desktop Header - Solo Logo */}
+        <div className="hidden lg:flex items-center h-16 px-6 border-b border-slate-100 dark:border-slate-700">
+          <Link to="/" className="flex items-center">
+            <Logo size={32} showText={true} />
           </Link>
-          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-500">
+        </div>
+
+        {/* Mobile Header - Botones a la izquierda + botón cerrar */}
+        <div className="flex lg:hidden items-center justify-between h-16 px-6 border-b border-slate-100 dark:border-slate-700">
+          <div className="flex items-center space-x-1">
+            <button 
+              onClick={onToggleDarkMode}
+              className="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 transition-colors p-1.5"
+              title={darkMode ? t.lightMode : t.darkMode}
+            >
+              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button 
+              onClick={onToggleLanguage}
+              className="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 transition-colors p-1.5"
+              title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+            >
+              <Languages className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={onOpenTutorial}
+              className="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 transition-colors p-1.5"
+              title={t.tutorial}
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
+          </div>
+          <button onClick={() => setIsSidebarOpen(false)} className="text-slate-500 dark:text-slate-400 p-1.5">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -124,8 +135,8 @@ const Layout: React.FC<LayoutProps> = ({
               onClick={() => setIsSidebarOpen(false)}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive(item.path) 
-                  ? 'bg-blue-50 text-primary font-medium' 
-                  : 'text-slate-600 hover:bg-slate-50'
+                  ? 'bg-blue-50 dark:bg-blue-900/30 text-primary dark:text-blue-400 font-medium' 
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
               }`}
             >
               <item.icon className="w-5 h-5" />
@@ -134,55 +145,42 @@ const Layout: React.FC<LayoutProps> = ({
           ))}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100 bg-slate-50 space-y-4">
-          {/* Google Drive Section */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+          {/* User Session Section */}
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">Firebase Sync</p>
             {!firebaseService.isConfigured() ? (
-              <div className="px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <div className="px-4 py-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md">
                 <div className="flex items-start space-x-2">
-                  <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-xs font-medium text-yellow-800">{t.firebaseNotConfigured}</p>
-                    <p className="text-xs text-yellow-700 mt-1">{t.firebaseNotConfiguredDesc}</p>
+                    <p className="text-xs font-medium text-yellow-800 dark:text-yellow-300">{t.firebaseNotConfigured}</p>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">{t.firebaseNotConfiguredDesc}</p>
                   </div>
                 </div>
               </div>
             ) : firebaseAuth.isSignedIn ? (
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-md border border-green-200">
-                  <Cloud className="w-4 h-4 text-green-600" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-slate-900 font-medium truncate">
-                      {firebaseAuth.user?.email || 'Connected'}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {syncing ? t.syncing : `${t.lastSync}: ${formatLastSync(lastSync)}`}
-                    </p>
-                  </div>
+              <div className="flex items-center space-x-2 px-4 py-3 bg-white dark:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 transition-colors">
+                <Cloud className={`w-4 h-4 flex-shrink-0 ${syncing ? 'text-blue-500 animate-pulse' : 'text-green-600 dark:text-green-400'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-slate-900 dark:text-slate-100 font-medium truncate">
+                    {firebaseAuth.user?.name || t.connected}
+                  </p>
+                  <p className={`text-xs ${syncing ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}`}>
+                    {syncing ? t.syncing : t.syncSuccess}
+                  </p>
                 </div>
-                <div className="flex space-x-2">
-                  <button 
-                    onClick={onSyncWithFirebase}
-                    disabled={syncing}
-                    className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 text-xs text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors disabled:opacity-50"
-                  >
-                    <RefreshCw className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} />
-                    <span>{t.syncWithFirebase}</span>
-                  </button>
-                  <button 
-                    onClick={onSignOutFromGoogle}
-                    className="flex items-center justify-center px-3 py-2 text-xs text-slate-600 hover:bg-white hover:text-red-600 rounded-md transition-colors"
-                    title={t.signOut}
-                  >
-                    <LogOut className="w-3 h-3" />
-                  </button>
-                </div>
+                <button 
+                  onClick={onSignOutFromGoogle}
+                  className="flex items-center justify-center p-2 text-slate-400 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors flex-shrink-0"
+                  title={t.signOut}
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
             ) : (
               <button 
                 onClick={onShowAuthModal}
-                className="flex w-full items-center justify-center space-x-2 px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                className="flex w-full items-center justify-center space-x-2 px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-md transition-colors"
               >
                 <Cloud className="w-4 h-4" />
                 <span>{t.signIn}</span>
@@ -190,66 +188,34 @@ const Layout: React.FC<LayoutProps> = ({
             )}
           </div>
 
-          {/* Data Management Section */}
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">{t.dataManagement}</p>
-            <button 
-              onClick={onExport}
-              className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              <span>{t.exportData}</span>
-            </button>
-            <button 
-              onClick={handleImportClick}
-              className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-slate-600 hover:bg-white hover:text-primary rounded-md transition-colors"
-            >
-              <Upload className="w-4 h-4" />
-              <span>{t.importData}</span>
-            </button>
-            <input 
-              ref={FileInput}
-              type="file"
-              accept=".json"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </div>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Bar (Mobile) */}
-        <header className="flex items-center justify-between h-16 px-4 bg-white border-b border-slate-200 lg:hidden">
-          <button onClick={() => setIsSidebarOpen(true)} className="text-slate-600">
+        {/* Top Bar (Mobile) - Logo con título centrado */}
+        <header className="flex items-center justify-between h-16 px-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 lg:hidden">
+          <button onClick={() => setIsSidebarOpen(true)} className="text-slate-600 dark:text-slate-300">
             <Menu className="w-6 h-6" />
           </button>
-          <span className="font-semibold text-slate-800">StudyWithTest</span>
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={onToggleLanguage}
-              className="text-slate-600 hover:text-primary transition-colors p-1.5"
-              title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
-            >
-              <Languages className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={onOpenTutorial}
-              className="text-slate-600 hover:text-primary transition-colors p-1.5"
-              title={t.tutorial}
-            >
-              <HelpCircle className="w-5 h-5" />
-            </button>
-          </div>
+          <Logo size={28} showText={true} />
+          <div className="w-6" />
         </header>
 
-        {/* Top Bar (Desktop) */}
-        <header className="hidden lg:flex items-center justify-end h-16 px-8 bg-white border-b border-slate-200">
+        {/* Top Bar (Desktop) - Botones a la derecha */}
+        <header className="hidden lg:flex items-center justify-end h-16 px-8 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center space-x-2">
             <button 
+              onClick={onToggleDarkMode}
+              className="flex items-center space-x-2 px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
+              title={darkMode ? t.lightMode : t.darkMode}
+            >
+              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              <span className="text-sm font-medium">{darkMode ? t.lightMode : t.darkMode}</span>
+            </button>
+            <button 
               onClick={onToggleLanguage}
-              className="flex items-center space-x-2 px-4 py-2 text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
               title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
             >
               <Languages className="w-5 h-5" />
@@ -257,7 +223,7 @@ const Layout: React.FC<LayoutProps> = ({
             </button>
             <button 
               onClick={onOpenTutorial}
-              className="flex items-center space-x-2 px-4 py-2 text-slate-600 hover:text-primary hover:bg-slate-50 rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
               title={t.tutorial}
             >
               <HelpCircle className="w-5 h-5" />
@@ -267,7 +233,7 @@ const Layout: React.FC<LayoutProps> = ({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth bg-slate-50 dark:bg-slate-900">
           {children}
         </main>
       </div>

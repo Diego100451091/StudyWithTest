@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Copy, Check, FileJson, ArrowRight, AlertCircle } from 'lucide-react';
 import { UserData, Subject, Test, Question } from '../types';
 import { Language, getTranslation } from '../services/translations';
+import Modal from './Modal';
+import { useModal } from '../hooks/useModal';
 
 interface AIToolsProps {
   subjects: Subject[];
@@ -13,10 +15,13 @@ const AITools: React.FC<AIToolsProps> = ({ subjects, language, onImportTest }) =
   const [step, setStep] = useState<'prompt' | 'import'>('prompt');
   const [copied, setCopied] = useState(false);
   const t = getTranslation(language);
+  const { modalState, showSuccess, closeModal } = useModal();
   
   // Form State
   const [config, setConfig] = useState({
+    testMode: 'generate' as 'generate' | 'extract',
     numQuestions: 10,
+    allQuestions: false,
     difficulty: language === 'es' ? 'Intermedio' : 'Intermediate',
     numOptions: 4,
     focusTopic: '',
@@ -29,10 +34,11 @@ const AITools: React.FC<AIToolsProps> = ({ subjects, language, onImportTest }) =
   const [error, setError] = useState<string | null>(null);
 
   const generatePrompt = () => {
-    return `Act as a professor. I need you to generate a multiple-choice test for me to study. 
+    if (config.testMode === 'generate') {
+      return `Act as a professor. I need you to generate a multiple-choice test for me to study. 
 Create a JSON object representing a test IN ${config.language.toUpperCase()}.
 Topic: ${config.focusTopic || 'General knowledge of the text provided'}
-Number of questions: ${config.numQuestions}
+Number of questions: ${config.allQuestions ? 'as many as appropriate based on the content' : config.numQuestions}
 Difficulty: ${config.difficulty}
 Number of options per question: ${config.numOptions}
 Language: ${config.language}
@@ -55,6 +61,46 @@ Strictly follow this JSON structure (do not add markdown code blocks, just the r
 }
 
 Ensure the content is accurate and educational.`;
+    } else {
+      // Extract mode
+      const topicFilter = config.focusTopic 
+        ? `Focus only on questions related to: ${config.focusTopic}` 
+        : 'Extract all questions found in the text';
+      
+      const questionCount = config.allQuestions 
+        ? 'Extract ALL questions found in the document' 
+        : `Extract up to ${config.numQuestions} questions`;
+
+      return `Act as an expert in extracting structured information from documents. I need you to extract existing multiple-choice test questions from the provided text/PDF.
+
+Your task: Extract test questions that are already present in the document and convert them to JSON format IN ${config.language.toUpperCase()}.
+
+Instructions:
+- ${questionCount}
+- ${topicFilter}
+- Maintain the original question text, options, and correct answers as they appear in the document
+- If explanations are provided in the text, include them; otherwise, provide a brief explanation based on context
+- Language: ${config.language}
+
+IMPORTANT: Extract ALL content (questions, options, answers, and explanations) exactly as they appear in ${config.language}.
+
+Strictly follow this JSON structure (do not add markdown code blocks, just the raw JSON or JSON inside a code block):
+
+{
+  "title": "Extracted Test Questions",
+  "description": "Questions extracted from the provided document",
+  "questions": [
+    {
+      "text": "Question text exactly as it appears...",
+      "options": ["Option A", "Option B", ...],
+      "correctOptionIndex": 0, // Integer (0-based index of correct option)
+      "explanation": "Explanation from the document or brief context."
+    }
+  ]
+}
+
+Be accurate and preserve the original content as much as possible.`;
+    }
   };
 
   const handleCopy = () => {
@@ -109,7 +155,7 @@ Ensure the content is accurate and educational.`;
       };
 
       onImportTest(newTest);
-      alert(t.importSuccess);
+      showSuccess(t.success, t.importSuccess);
       setJsonInput('');
       // Optional: navigate away
     } catch (err: any) {
@@ -119,17 +165,17 @@ Ensure the content is accurate and educational.`;
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="grid grid-cols-2 border-b border-slate-200">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="grid grid-cols-2 border-b border-slate-200 dark:border-slate-700">
           <button 
             onClick={() => setStep('prompt')}
-            className={`p-4 text-center font-medium transition-colors ${step === 'prompt' ? 'bg-blue-50 text-primary border-b-2 border-primary' : 'text-slate-600 hover:bg-slate-50'}`}
+            className={`p-4 text-center font-medium transition-colors ${step === 'prompt' ? 'bg-blue-50 dark:bg-blue-900/30 text-primary dark:text-blue-400 border-b-2 border-primary dark:border-blue-400' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
           >
             {t.step} 1: {t.generateStep}
           </button>
           <button 
             onClick={() => setStep('import')}
-            className={`p-4 text-center font-medium transition-colors ${step === 'import' ? 'bg-blue-50 text-primary border-b-2 border-primary' : 'text-slate-600 hover:bg-slate-50'}`}
+            className={`p-4 text-center font-medium transition-colors ${step === 'import' ? 'bg-blue-50 dark:bg-blue-900/30 text-primary dark:text-blue-400 border-b-2 border-primary dark:border-blue-400' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
           >
             {t.step} 2: {t.importStep}
           </button>
@@ -139,27 +185,41 @@ Ensure the content is accurate and educational.`;
           {step === 'prompt' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.configurePrompt}</h2>
-                <p className="text-slate-500">{t.configureDescription}</p>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.configurePrompt}</h2>
+                <p className="text-slate-500 dark:text-slate-400">{t.configureDescription}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.topicContext}</label>
+                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.mode}</label>
+                   <select 
+                      value={config.testMode}
+                      onChange={e => setConfig({...config, testMode: e.target.value as 'generate' | 'extract'})}
+                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                   >
+                      <option value="generate">{t.generateMode}</option>
+                      <option value="extract">{t.extractMode}</option>
+                   </select>
+                </div>
+                <div>
+                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.topicContext}</label>
                    <input 
                       type="text"
                       value={config.focusTopic}
                       onChange={e => setConfig({...config, focusTopic: e.target.value})}
-                      placeholder={language === 'es' ? 'ej. Capítulo 3 del Libro de Historia' : 'e.g. Chapter 3 of History Book'}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                      placeholder={config.testMode === 'generate' 
+                        ? (language === 'es' ? 'ej. Capítulo 3 del Libro de Historia' : 'e.g. Chapter 3 of History Book')
+                        : (language === 'es' ? 'ej. Solo preguntas sobre la Guerra Civil' : 'e.g. Only questions about the Civil War')
+                      }
+                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                    />
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.testLanguage}</label>
+                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.testLanguage}</label>
                    <select 
                       value={config.language}
                       onChange={e => setConfig({...config, language: e.target.value})}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
+                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
                    >
                       <option>English</option>
                       <option>Spanish</option>
@@ -174,54 +234,72 @@ Ensure the content is accurate and educational.`;
                       <option>Arabic</option>
                    </select>
                 </div>
+                {config.testMode === 'generate' && (
+                  <div>
+                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.difficulty}</label>
+                     <select 
+                        value={config.difficulty}
+                        onChange={e => setConfig({...config, difficulty: e.target.value})}
+                        className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                     >
+                        <option>{t.easy}</option>
+                        <option>{t.intermediate}</option>
+                        <option>{t.hard}</option>
+                        <option>{t.expert}</option>
+                     </select>
+                  </div>
+                )}
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.difficulty}</label>
-                   <select 
-                      value={config.difficulty}
-                      onChange={e => setConfig({...config, difficulty: e.target.value})}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
-                   >
-                      <option>{t.easy}</option>
-                      <option>{t.intermediate}</option>
-                      <option>{t.hard}</option>
-                      <option>{t.expert}</option>
-                   </select>
+                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.numQuestions}</label>
+                   <div className="flex items-center space-x-3">
+                     <input 
+                        type="number"
+                        min="1" max="50"
+                        value={config.numQuestions}
+                        onChange={e => setConfig({...config, numQuestions: parseInt(e.target.value), allQuestions: false})}
+                        disabled={config.allQuestions}
+                        className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-100 dark:disabled:bg-slate-600 disabled:text-slate-500 dark:disabled:text-slate-400"
+                     />
+                     {config.testMode === 'extract' && (
+                       <label className="flex items-center space-x-2 cursor-pointer">
+                         <input 
+                           type="checkbox"
+                           checked={config.allQuestions}
+                           onChange={e => setConfig({...config, allQuestions: e.target.checked})}
+                           className="w-4 h-4 text-blue-600 bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-600 checked:border-blue-600"
+                         />
+                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t.allQuestions}</span>
+                       </label>
+                     )}
+                   </div>
                 </div>
-                <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.numQuestions}</label>
-                   <input 
-                      type="number"
-                      min="1" max="50"
-                      value={config.numQuestions}
-                      onChange={e => setConfig({...config, numQuestions: parseInt(e.target.value)})}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                   />
-                </div>
-                <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">{t.optionsPerQuestion}</label>
-                   <select 
-                      value={config.numOptions}
-                      onChange={e => setConfig({...config, numOptions: parseInt(e.target.value)})}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
-                   >
-                      <option value={2}>2 (True/False style)</option>
-                      <option value={3}>3</option>
-                      <option value={4}>4 (Standard)</option>
-                      <option value={5}>5</option>
-                   </select>
-                </div>
+                {config.testMode === 'generate' && (
+                  <div>
+                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.optionsPerQuestion}</label>
+                     <select 
+                        value={config.numOptions}
+                        onChange={e => setConfig({...config, numOptions: parseInt(e.target.value)})}
+                        className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                     >
+                        <option value={2}>2 (True/False style)</option>
+                        <option value={3}>3</option>
+                        <option value={4}>4 (Standard)</option>
+                        <option value={5}>5</option>
+                     </select>
+                  </div>
+                )}
               </div>
 
               <div className="relative mt-6">
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-2">{t.generatedPrompt}</label>
+                <label className="block text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase mb-2">{t.generatedPrompt}</label>
                 <textarea 
                   readOnly
                   value={generatePrompt()}
-                  className="w-full h-48 p-4 bg-slate-800 text-slate-100 rounded-xl font-mono text-sm resize-none outline-none"
+                  className="w-full h-48 p-4 bg-slate-800 dark:bg-slate-900 text-slate-100 dark:text-slate-200 rounded-xl font-mono text-sm resize-none outline-none"
                 />
                 <button 
                   onClick={handleCopy}
-                  className="absolute top-9 right-4 bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-md text-xs font-medium backdrop-blur-sm flex items-center space-x-1 transition-colors"
+                  className="absolute top-9 right-4 bg-white/10 hover:bg-white/20 dark:bg-white/5 dark:hover:bg-white/10 text-white px-3 py-1.5 rounded-md text-xs font-medium backdrop-blur-sm flex items-center space-x-1 transition-colors"
                 >
                   {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                   <span>{copied ? t.copied : t.copyToClipboard}</span>
@@ -231,7 +309,7 @@ Ensure the content is accurate and educational.`;
               <div className="flex justify-end">
                  <button 
                    onClick={() => setStep('import')}
-                   className="flex items-center space-x-2 text-primary font-medium hover:underline"
+                   className="flex items-center space-x-2 text-primary dark:text-blue-400 font-medium hover:underline"
                  >
                    <span>{t.goToImport}</span>
                    <ArrowRight className="w-4 h-4" />
@@ -243,12 +321,12 @@ Ensure the content is accurate and educational.`;
           {step === 'import' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">{t.importAIResponse}</h2>
-                <p className="text-slate-500">{t.pasteJSON}</p>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.importAIResponse}</h2>
+                <p className="text-slate-500 dark:text-slate-400">{t.pasteJSON}</p>
               </div>
 
               {subjects.length === 0 ? (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 flex items-start space-x-3">
+                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg text-amber-800 dark:text-amber-300 flex items-start space-x-3">
                   <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">{t.noSubjectsFound}</p>
@@ -258,11 +336,11 @@ Ensure the content is accurate and educational.`;
               ) : (
                 <div className="space-y-4">
                    <div>
-                     <label className="block text-sm font-medium text-slate-700 mb-1">{t.importIntoSubject}</label>
+                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.importIntoSubject}</label>
                      <select
                        value={targetSubjectId}
                        onChange={e => setTargetSubjectId(e.target.value)}
-                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"
+                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
                      >
                        {subjects.map(s => (
                          <option key={s.id} value={s.id}>{s.name}</option>
@@ -271,17 +349,17 @@ Ensure the content is accurate and educational.`;
                    </div>
                    
                    <div>
-                     <label className="block text-sm font-medium text-slate-700 mb-1">{t.jsonOutput}</label>
+                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.jsonOutput}</label>
                      <textarea 
                         value={jsonInput}
                         onChange={e => setJsonInput(e.target.value)}
                         placeholder='Paste JSON here... { "title": "...", "questions": [...] }'
-                        className="w-full h-64 p-4 border border-slate-300 rounded-xl font-mono text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                        className="w-full h-64 p-4 border border-slate-300 dark:border-slate-600 rounded-xl font-mono text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                      />
                    </div>
                    
                    {error && (
-                     <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center">
+                     <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg flex items-center">
                        <AlertCircle className="w-4 h-4 mr-2" />
                        {error}
                      </div>
@@ -290,7 +368,7 @@ Ensure the content is accurate and educational.`;
                    <div className="flex justify-end pt-4">
                       <button 
                         onClick={handleImport}
-                        className="flex items-center space-x-2 bg-primary text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+                        className="flex items-center space-x-2 bg-primary dark:bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 dark:shadow-blue-900/30"
                       >
                         <FileJson className="w-5 h-5" />
                         <span>{t.parseAndSave}</span>
@@ -302,6 +380,17 @@ Ensure the content is accurate and educational.`;
           )}
         </div>
       </div>
+      
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+      />
     </div>
   );
 };

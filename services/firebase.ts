@@ -6,6 +6,9 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateProfile,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
   User 
 } from 'firebase/auth';
 import { 
@@ -13,7 +16,6 @@ import {
   doc, 
   setDoc, 
   getDoc, 
-  onSnapshot,
   Firestore 
 } from 'firebase/firestore';
 import { UserData } from '../types';
@@ -26,6 +28,7 @@ const firebaseConfig = {
   storageBucket: (import.meta as any).env?.VITE_FIREBASE_STORAGE_BUCKET || '',
   messagingSenderId: (import.meta as any).env?.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
   appId: (import.meta as any).env?.VITE_FIREBASE_APP_ID || '',
+  measurementId: (import.meta as any).env?.VITE_FIREBASE_MEASUREMENT_ID || '',
 };
 
 export interface FirebaseAuthState {
@@ -38,21 +41,30 @@ export interface FirebaseAuthState {
   } | null;
 }
 
+/**
+ * Service for managing Firebase operations
+ * Handles authentication, data upload/download, and sync operations
+ */
 class FirebaseService {
   private app: FirebaseApp | null = null;
   private db: Firestore | null = null;
   private authStateCallback: ((auth: FirebaseAuthState) => void) | null = null;
-  private dataChangeCallback: ((data: UserData) => void) | null = null;
-  private unsubscribeSnapshot: (() => void) | null = null;
 
+  /**
+   * Check if Firebase is properly configured with environment variables
+   */
   isConfigured(): boolean {
     return !!(
       firebaseConfig.apiKey &&
       firebaseConfig.authDomain &&
-      firebaseConfig.projectId
+      firebaseConfig.projectId &&
+      firebaseConfig.measurementId
     );
   }
 
+  /**
+   * Initialize Firebase app, Firestore, and auth listeners
+   */
   async initialize(): Promise<void> {
     if (!this.isConfigured()) {
       console.warn('Firebase not configured. Cloud sync features will be disabled.');
@@ -60,25 +72,15 @@ class FirebaseService {
     }
 
     try {
-      // Initialize Firebase
       this.app = initializeApp(firebaseConfig);
       this.db = getFirestore(this.app);
       const auth = getAuth(this.app);
 
       // Listen to auth state changes
+      // Note: We don't subscribe to real-time data changes to avoid infinite loops
+      // Sync pattern: initial load + push on local changes
       onAuthStateChanged(auth, (user) => {
         this.updateAuthState(user);
-        
-        // Subscribe to data changes when user signs in
-        if (user) {
-          this.subscribeToDataChanges(user.uid);
-        } else {
-          // Unsubscribe when user signs out
-          if (this.unsubscribeSnapshot) {
-            this.unsubscribeSnapshot();
-            this.unsubscribeSnapshot = null;
-          }
-        }
       });
     } catch (error) {
       console.error('Failed to initialize Firebase:', error);
@@ -107,36 +109,16 @@ class FirebaseService {
     }
   }
 
+  /**
+   * Register callback for auth state changes
+   */
   onAuthStateChange(callback: (auth: FirebaseAuthState) => void) {
     this.authStateCallback = callback;
   }
 
-  onDataChange(callback: (data: UserData) => void) {
-    this.dataChangeCallback = callback;
-  }
-
-  private subscribeToDataChanges(userId: string) {
-    if (!this.db) return;
-
-    // Unsubscribe from previous listener
-    if (this.unsubscribeSnapshot) {
-      this.unsubscribeSnapshot();
-    }
-
-    const docRef = doc(this.db, 'users', userId);
-    
-    this.unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists() && this.dataChangeCallback) {
-        const firestoreData = docSnap.data();
-        if (firestoreData.userData) {
-          this.dataChangeCallback(firestoreData.userData);
-        }
-      }
-    }, (error) => {
-      console.error('Error listening to data changes:', error);
-    });
-  }
-
+  /**
+   * Sign in with email and password
+   */
   async signIn(email: string, password: string): Promise<void> {
     if (!this.app) {
       throw new Error('Firebase not initialized');
@@ -152,6 +134,9 @@ class FirebaseService {
     }
   }
 
+  /**
+   * Create new user account with email and password
+   */
   async signUp(email: string, password: string, displayName: string): Promise<void> {
     if (!this.app) {
       throw new Error('Firebase not initialized');
@@ -161,7 +146,6 @@ class FirebaseService {
     
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // Update profile with display name
       if (userCredential.user) {
         await updateProfile(userCredential.user, { displayName });
       }
@@ -171,6 +155,9 @@ class FirebaseService {
     }
   }
 
+  /**
+   * Sign out current user
+   */
   async signOut(): Promise<void> {
     if (!this.app) return;
 
@@ -178,6 +165,9 @@ class FirebaseService {
     await firebaseSignOut(auth);
   }
 
+  /**
+   * Get currently authenticated user
+   */
   getCurrentUser(): User | null {
     if (!this.app) return null;
     const auth = getAuth(this.app);
@@ -185,7 +175,61 @@ class FirebaseService {
   }
 
   /**
-   * Calculate checksum (simple hash) of the data
+   * Update user profile (display name)
+   */
+  async updateUserProfile(displayName: string): Promise<void> {
+    if (!this.app) {
+      throw new Error('Firebase not initialized');
+    }
+
+    const auth = getAuth(this.app);
+    const user = auth.currentUser;
+    
+    if (!user) {
+      throw new Error('Not signed in');
+    }
+
+    try {
+      await updateProfile(user, { displayName });
+      // Update auth state to reflect changes
+      this.updateAuthState(user);
+    } catch (error: any) {
+      console.error('Update profile error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user password
+   * Requires reauthentication for security
+   */
+  async updateUserPassword(currentPassword: string, newPassword: string): Promise<void> {
+    if (!this.app) {
+      throw new Error('Firebase not initialized');
+    }
+
+    const auth = getAuth(this.app);
+    const user = auth.currentUser;
+    
+    if (!user || !user.email) {
+      throw new Error('Not signed in');
+    }
+
+    try {
+      // Reauthenticate user first
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+      
+      // Update password
+      await updatePassword(user, newPassword);
+    } catch (error: any) {
+      console.error('Update password error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate checksum (simple hash) of the data for conflict detection
    */
   calculateChecksum(data: UserData): string {
     const str = JSON.stringify(data);
@@ -202,23 +246,48 @@ class FirebaseService {
    * Upload data to Firestore
    */
   async uploadData(data: UserData): Promise<void> {
+    console.log('%c[FIREBASE] uploadData: Starting upload', 'color: #8b5cf6; font-weight: bold;');
+    
     if (!this.db) {
+      console.error('%c[FIREBASE] uploadData: Firebase not initialized', 'color: #ef4444; font-weight: bold;');
       throw new Error('Firebase not initialized');
     }
 
     const user = this.getCurrentUser();
     if (!user) {
+      console.error('%c[FIREBASE] uploadData: User not authenticated', 'color: #ef4444; font-weight: bold;');
       throw new Error('Not signed in');
     }
 
+    console.log('%c[FIREBASE] uploadData: Calculating checksum...', 'color: #8b5cf6; font-weight: bold;');
     const checksum = this.calculateChecksum(data);
+    console.log('%c[FIREBASE] uploadData: Checksum calculated:', 'color: #8b5cf6; font-weight: bold;', checksum);
+    
+    console.log('%c[FIREBASE] uploadData: Creating document reference...', 'color: #8b5cf6; font-weight: bold;');
     const docRef = doc(this.db, 'users', user.uid);
 
-    await setDoc(docRef, {
-      userData: data,
-      checksum,
-      lastModified: new Date().toISOString(),
-    }, { merge: true });
+    console.log('%c[FIREBASE] uploadData: Sending to Firestore...', 'color: #8b5cf6; font-weight: bold;', {
+      userId: user.uid,
+      subjects: data.subjects.length,
+      tests: data.tests.length,
+      results: data.results.length
+    });
+
+    try {
+      await setDoc(docRef, {
+        userData: data,
+        checksum,
+        lastModified: new Date().toISOString(),
+      }, { merge: true });
+      console.log('%c[FIREBASE] uploadData: Upload completed successfully', 'color: #10b981; font-weight: bold;');
+    } catch (error: any) {
+      console.error('%c[FIREBASE] uploadData: Error in setDoc', 'color: #ef4444; font-weight: bold;', {
+        message: error.message,
+        code: error.code,
+        name: error.name
+      });
+      throw error;
+    }
   }
 
   /**
@@ -229,40 +298,51 @@ class FirebaseService {
     checksum: string;
     lastModified: string;
   } | null> {
+    console.log('%c[FIREBASE] downloadData: Starting download', 'color: #3b82f6; font-weight: bold;');
+    
     if (!this.db) {
+      console.error('%c[FIREBASE] downloadData: Firebase not initialized', 'color: #ef4444; font-weight: bold;');
       throw new Error('Firebase not initialized');
     }
 
     const user = this.getCurrentUser();
     if (!user) {
+      console.error('%c[FIREBASE] downloadData: User not authenticated', 'color: #ef4444; font-weight: bold;');
       throw new Error('Not signed in');
     }
 
     try {
       const docRef = doc(this.db, 'users', user.uid);
+      console.log('%c[FIREBASE] downloadData: Fetching document from Firestore...', 'color: #3b82f6; font-weight: bold;');
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
-        // Document doesn't exist yet - this is fine for first-time users
-        console.log('No cloud data found for user. This is normal for first sign-in.');
+        console.log('%c[FIREBASE] downloadData: No data in cloud (new user)', 'color: #94a3b8; font-weight: bold;');
         return null;
       }
 
       const firestoreData = docSnap.data();
+      console.log('%c[FIREBASE] downloadData: Data downloaded successfully', 'color: #10b981; font-weight: bold;', {
+        checksum: firestoreData.checksum,
+        lastModified: firestoreData.lastModified,
+        subjects: firestoreData.userData?.subjects?.length || 0,
+        tests: firestoreData.userData?.tests?.length || 0
+      });
+      
       return {
         data: firestoreData.userData,
         checksum: firestoreData.checksum,
         lastModified: firestoreData.lastModified,
       };
     } catch (error: any) {
+      console.error('%c[FIREBASE] downloadData: Error during download', 'color: #ef4444; font-weight: bold;', error);
+      
       // Handle offline errors gracefully
       if (error?.code === 'unavailable' || error?.message?.includes('client is offline')) {
-        console.warn('⚠️ Cannot fetch cloud data: Firestore appears to be blocked by a browser extension.');
+        console.warn('[WARNING] Cannot fetch cloud data: Firestore appears to be blocked by a browser extension.');
         console.warn('Tip: Disable AdBlock/uBlock for localhost, or add an exception for googleapis.com');
-        // Return null to allow app to continue with local data
         return null;
       }
-      // Re-throw other errors
       throw error;
     }
   }

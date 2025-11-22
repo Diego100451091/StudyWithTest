@@ -42,6 +42,9 @@ export interface Translations {
   reading: string;
   study: string;
   exam: string;
+  readingMode: string;
+  studyMode: string;
+  examMode: string;
   questions: string;
   added: string;
   runOnlyThis: string;
@@ -86,10 +89,14 @@ export interface Translations {
   // AI Tools
   configurePrompt: string;
   configureDescription: string;
+  mode: string;
+  generateMode: string;
+  extractMode: string;
   topicContext: string;
   testLanguage: string;
   difficulty: string;
   numQuestions: string;
+  allQuestions: string;
   optionsPerQuestion: string;
   generatedPrompt: string;
   copyToClipboard: string;
@@ -115,8 +122,15 @@ export interface Translations {
   avgScoreBySubject: string;
   recentActivity: string;
   unknownSubject: string;
-  mode: string;
+  testMode: string;
   results: string;
+  deleteResult: string;
+  deleteResultConfirm: string;
+  failed: string;
+  showDetails: string;
+  hideDetails: string;
+  viewTest: string;
+  backToHistory: string;
   
   // Tutorial
   welcome: string;
@@ -184,6 +198,49 @@ export interface Translations {
   lastModified: string;
   firebaseNotConfigured: string;
   firebaseNotConfiguredDesc: string;
+  pleaseWait: string;
+  loadingData: string;
+  authError: string;
+  invalidCredentials: string;
+  pleaseFillAllFields: string;
+  pleaseEnterName: string;
+  justNow: string;
+  minutesAbbr: string;
+  hoursAbbr: string;
+  connected: string;
+  
+  // Settings
+  settings: string;
+  profileSettings: string;
+  updateProfile: string;
+  updatePassword: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+  updatePasswordButton: string;
+  updateProfileButton: string;
+  passwordUpdated: string;
+  profileUpdated: string;
+  passwordUpdateError: string;
+  profileUpdateError: string;
+  newPasswordMismatch: string;
+  dataManagementSettings: string;
+  exportDescription: string;
+  importDescription: string;
+  exportButton: string;
+  importButton: string;
+  accountSettings: string;
+  
+  // Modals
+  confirm: string;
+  warning: string;
+  error: string;
+  success: string;
+  dataImported: string;
+  invalidJSON: string;
+  noQuestionsFound: string;
+  darkMode: string;
+  lightMode: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -229,6 +286,9 @@ export const translations: Record<Language, Translations> = {
     reading: 'Lectura',
     study: 'Estudio',
     exam: 'Examen',
+    readingMode: 'Modo Lectura',
+    studyMode: 'Modo Estudio',
+    examMode: 'Modo Examen',
     questions: 'preguntas',
     added: 'Añadido',
     runOnlyThis: 'Ejecutar solo este test',
@@ -273,10 +333,14 @@ export const translations: Record<Language, Translations> = {
     // AI Tools
     configurePrompt: 'Configura tu Prompt',
     configureDescription: 'Ajusta estos parámetros, copia el prompt y pégalo en ChatGPT, Claude o Gemini junto con tus apuntes o contenido PDF.',
+    mode: 'Modo',
+    generateMode: 'Generar Test',
+    extractMode: 'Extraer Test',
     topicContext: 'Tema / Contexto',
     testLanguage: 'Idioma del Test',
     difficulty: 'Dificultad',
     numQuestions: 'Número de Preguntas',
+    allQuestions: 'Todas',
     optionsPerQuestion: 'Opciones por Pregunta',
     generatedPrompt: 'Prompt Generado',
     copyToClipboard: 'Copiar al Portapapeles',
@@ -302,8 +366,15 @@ export const translations: Record<Language, Translations> = {
     avgScoreBySubject: 'Puntuación Media por Asignatura',
     recentActivity: 'Actividad Reciente',
     unknownSubject: 'Asignatura Desconocida',
-    mode: 'Modo',
+    testMode: 'Modo',
     results: 'Resultados',
+    deleteResult: 'Eliminar registro',
+    deleteResultConfirm: '¿Estás seguro de que deseas eliminar este resultado?',
+    failed: 'falladas',
+    showDetails: 'Mostrar detalles',
+    hideDetails: 'Ocultar detalles',
+    viewTest: 'Ver test completo',
+    backToHistory: 'Volver al historial',
     
     // Tutorial
     welcome: '¡Bienvenido a StudyWithTest!',
@@ -357,7 +428,7 @@ export const translations: Record<Language, Translations> = {
     userNotFound: 'Usuario no encontrado',
     syncWithFirebase: 'Sincronizar',
     syncing: 'Sincronizando...',
-    syncSuccess: '¡Sincronizado correctamente!',
+    syncSuccess: 'Sincronizado',
     syncError: 'Error al sincronizar',
     lastSync: 'Última sincronización',
     notSynced: 'No sincronizado',
@@ -371,6 +442,49 @@ export const translations: Record<Language, Translations> = {
     lastModified: 'Última modificación',
     firebaseNotConfigured: 'Firebase no configurado',
     firebaseNotConfiguredDesc: 'Para habilitar la sincronización en la nube, configura Firebase en el archivo .env',
+    pleaseWait: 'Por favor espera',
+    loadingData: 'Cargando datos...',
+    authError: 'Error de autenticación. Inténtalo de nuevo.',
+    invalidCredentials: 'Credenciales inválidas. Verifica tu correo y contraseña.',
+    pleaseFillAllFields: 'Por favor, completa todos los campos',
+    pleaseEnterName: 'Por favor, ingresa tu nombre',
+    justNow: 'Ahora',
+    minutesAbbr: 'min',
+    hoursAbbr: 'h',
+    connected: 'Conectado',
+    
+    // Settings
+    settings: 'Configuración',
+    profileSettings: 'Configuración de Perfil',
+    updateProfile: 'Actualizar Perfil',
+    updatePassword: 'Actualizar Contraseña',
+    currentPassword: 'Contraseña Actual',
+    newPassword: 'Nueva Contraseña',
+    confirmNewPassword: 'Confirmar Nueva Contraseña',
+    updatePasswordButton: 'Actualizar Contraseña',
+    updateProfileButton: 'Actualizar Perfil',
+    passwordUpdated: 'Contraseña actualizada correctamente',
+    profileUpdated: 'Perfil actualizado correctamente',
+    passwordUpdateError: 'Error al actualizar la contraseña',
+    profileUpdateError: 'Error al actualizar el perfil',
+    newPasswordMismatch: 'Las nuevas contraseñas no coinciden',
+    dataManagementSettings: 'Gestión de Datos',
+    exportDescription: 'Exporta todos tus datos (asignaturas, tests, resultados) a un archivo JSON como respaldo.',
+    importDescription: 'Importa datos desde un archivo JSON previamente exportado. Esto sobrescribirá tus datos actuales.',
+    exportButton: 'Exportar Datos',
+    importButton: 'Importar Datos',
+    accountSettings: 'Configuración de Cuenta',
+    
+    // Modals
+    confirm: 'Confirmar',
+    warning: 'Advertencia',
+    error: 'Error',
+    success: 'Éxito',
+    dataImported: 'Datos importados correctamente',
+    invalidJSON: 'Error al importar datos. JSON inválido.',
+    noQuestionsFound: 'No se encontraron preguntas para la selección.',
+    darkMode: 'Modo Oscuro',
+    lightMode: 'Modo Claro',
   },
   
   en: {
@@ -415,6 +529,9 @@ export const translations: Record<Language, Translations> = {
     reading: 'Reading',
     study: 'Study',
     exam: 'Exam',
+    readingMode: 'Reading Mode',
+    studyMode: 'Study Mode',
+    examMode: 'Exam Mode',
     questions: 'questions',
     added: 'Added',
     runOnlyThis: 'Run only this test',
@@ -459,10 +576,14 @@ export const translations: Record<Language, Translations> = {
     // AI Tools
     configurePrompt: 'Configure your Prompt',
     configureDescription: 'Adjust these settings, copy the prompt, and paste it into ChatGPT, Claude, or Gemini along with your study notes or PDF content.',
+    mode: 'Mode',
+    generateMode: 'Generate Test',
+    extractMode: 'Extract Test',
     topicContext: 'Topic / Context',
     testLanguage: 'Test Language',
     difficulty: 'Difficulty',
     numQuestions: 'Number of Questions',
+    allQuestions: 'All',
     optionsPerQuestion: 'Options per Question',
     generatedPrompt: 'Generated Prompt',
     copyToClipboard: 'Copy to Clipboard',
@@ -488,8 +609,15 @@ export const translations: Record<Language, Translations> = {
     avgScoreBySubject: 'Average Score by Subject',
     recentActivity: 'Recent Activity',
     unknownSubject: 'Unknown Subject',
-    mode: 'Mode',
+    testMode: 'Mode',
     results: 'Results',
+    deleteResult: 'Delete record',
+    deleteResultConfirm: 'Are you sure you want to delete this result?',
+    failed: 'failed',
+    showDetails: 'Show details',
+    hideDetails: 'Hide details',
+    viewTest: 'View full test',
+    backToHistory: 'Back to history',
     
     // Tutorial
     welcome: 'Welcome to StudyWithTest!',
@@ -543,7 +671,7 @@ export const translations: Record<Language, Translations> = {
     userNotFound: 'User not found',
     syncWithFirebase: 'Sync',
     syncing: 'Syncing...',
-    syncSuccess: 'Synced successfully!',
+    syncSuccess: 'Syncronized',
     syncError: 'Sync error',
     lastSync: 'Last sync',
     notSynced: 'Not synced',
@@ -557,9 +685,66 @@ export const translations: Record<Language, Translations> = {
     lastModified: 'Last modified',
     firebaseNotConfigured: 'Firebase not configured',
     firebaseNotConfiguredDesc: 'To enable cloud sync, configure Firebase in the .env file',
+    pleaseWait: 'Please wait',
+    loadingData: 'Loading data...',
+    authError: 'Authentication error. Please try again.',
+    invalidCredentials: 'Invalid credentials. Check your email and password.',
+    pleaseFillAllFields: 'Please fill all fields',
+    pleaseEnterName: 'Please enter your name',
+    justNow: 'Just now',
+    minutesAbbr: 'min',
+    hoursAbbr: 'h',
+    connected: 'Connected',
+    
+    // Settings
+    settings: 'Settings',
+    profileSettings: 'Profile Settings',
+    updateProfile: 'Update Profile',
+    updatePassword: 'Update Password',
+    currentPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmNewPassword: 'Confirm New Password',
+    updatePasswordButton: 'Update Password',
+    updateProfileButton: 'Update Profile',
+    passwordUpdated: 'Password updated successfully',
+    profileUpdated: 'Profile updated successfully',
+    passwordUpdateError: 'Error updating password',
+    profileUpdateError: 'Error updating profile',
+    newPasswordMismatch: 'New passwords do not match',
+    dataManagementSettings: 'Data Management',
+    exportDescription: 'Export all your data (subjects, tests, results) to a JSON file as backup.',
+    importDescription: 'Import data from a previously exported JSON file. This will overwrite your current data.',
+    exportButton: 'Export Data',
+    importButton: 'Import Data',
+    accountSettings: 'Account Settings',
+    
+    // Modals
+    confirm: 'Confirm',
+    warning: 'Warning',
+    error: 'Error',
+    success: 'Success',
+    dataImported: 'Data imported successfully',
+    invalidJSON: 'Failed to import data. Invalid JSON.',
+    noQuestionsFound: 'No questions found for selection.',
+    darkMode: 'Dark Mode',
+    lightMode: 'Light Mode',
   }
 };
 
 export const getTranslation = (lang: Language): Translations => {
   return translations[lang];
+};
+
+export const getTestModeTranslation = (mode: string, lang: Language): string => {
+  const t = translations[lang];
+  switch(mode.toUpperCase()) {
+    case 'READING':
+      return t.readingMode;
+    case 'STUDY':
+      return t.studyMode;
+    case 'EXAM':
+      return t.examMode;
+    default:
+      return mode;
+  }
 };

@@ -5,11 +5,11 @@ import { Language, getTranslation } from '../services/translations';
 
 interface DataConflictModalProps {
   localData: UserData;
-  driveData: UserData;
+  firebaseData: UserData;
   localChecksum: string;
-  driveChecksum: string;
+  firebaseChecksum: string;
   localLastModified: string;
-  driveLastModified: string;
+  firebaseLastModified: string;
   language: Language;
   onSelectLocal: () => void;
   onSelectCloud: () => void;
@@ -18,11 +18,11 @@ interface DataConflictModalProps {
 
 export const DataConflictModal: React.FC<DataConflictModalProps> = ({
   localData,
-  driveData,
+  firebaseData,
   localChecksum,
-  driveChecksum,
+  firebaseChecksum,
   localLastModified,
-  driveLastModified,
+  firebaseLastModified,
   language,
   onSelectLocal,
   onSelectCloud,
@@ -47,8 +47,8 @@ export const DataConflictModal: React.FC<DataConflictModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center gap-3 mb-4">
@@ -111,28 +111,28 @@ export const DataConflictModal: React.FC<DataConflictModalProps> = ({
               <div className="space-y-2 text-sm">
                 <div>
                   <span className="font-medium text-gray-700">{t.items}: </span>
-                  <span className="text-gray-900">{countItems(driveData)}</span>
+                  <span className="text-gray-900">{countItems(firebaseData)}</span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">{t.subjects}: </span>
-                  <span className="text-gray-900">{driveData.subjects.length}</span>
+                  <span className="text-gray-900">{firebaseData.subjects.length}</span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">{t.tests}: </span>
-                  <span className="text-gray-900">{driveData.tests.length}</span>
+                  <span className="text-gray-900">{firebaseData.tests.length}</span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">{t.results}: </span>
-                  <span className="text-gray-900">{driveData.results.length}</span>
+                  <span className="text-gray-900">{firebaseData.results.length}</span>
                 </div>
                 <div className="pt-2 border-t border-green-200">
                   <span className="font-medium text-gray-700">{t.lastModified}: </span>
                   <span className="text-gray-900 text-xs block mt-1">
-                    {formatDate(driveLastModified)}
+                    {formatDate(firebaseLastModified)}
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">
-                  Checksum: {driveChecksum}
+                  Checksum: {firebaseChecksum}
                 </div>
               </div>
               <button
@@ -144,13 +144,6 @@ export const DataConflictModal: React.FC<DataConflictModalProps> = ({
             </div>
           </div>
 
-          {/* Cancel Button */}
-          <button
-            onClick={onClose}
-            className="w-full py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            {t.cancel}
-          </button>
         </div>
       </div>
     </div>

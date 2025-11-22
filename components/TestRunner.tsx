@@ -3,6 +3,8 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Flag, Check, X, Clock, RotateCcw, Save, CheckCircle2 } from 'lucide-react';
 import { UserData, Test, Question, QuestionResult, TestMode, TestResult } from '../types';
 import { Language, getTranslation } from '../services/translations';
+import Modal from './Modal';
+import { useModal } from '../hooks/useModal';
 
 interface TestRunnerProps {
   data: UserData;
@@ -16,6 +18,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const t = getTranslation(language);
+  const { modalState, showError, closeModal } = useModal();
 
   // Query Params
   const testIds = searchParams.get('tests')?.split(',') || [];
@@ -73,10 +76,10 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
         const shuffled = [...pool].sort(() => Math.random() - 0.5);
         setActiveQuestions(shuffled);
     } else {
-        alert("No questions found for selection.");
+        showError(t.error, t.noQuestionsFound);
         navigate(-1);
     }
-  }, [data, testIds, type, subjectId, navigate, activeQuestions.length]);
+  }, [data, testIds, type, subjectId, navigate, activeQuestions.length, showError, t]);
 
   const currentQuestion = activeQuestions[currentIndex];
   const isBookmarked = currentQuestion && data.bookmarkedQuestionIds.includes(currentQuestion.id);
@@ -91,6 +94,12 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
   };
 
   const finishTest = useCallback(() => {
+    // En modo lectura, no guardamos resultados y regresamos directamente
+    if (mode === TestMode.READING) {
+      navigate(`/subject/${subjectId}`);
+      return;
+    }
+
     setIsFinished(true);
     
     const resultDetails: QuestionResult[] = activeQuestions.map(q => ({
@@ -115,7 +124,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
     };
 
     onSaveResult(result);
-  }, [activeQuestions, answers, elapsed, mode, onSaveResult, questionTimes, subjectId, testIds]);
+  }, [activeQuestions, answers, elapsed, mode, onSaveResult, questionTimes, subjectId, testIds, navigate]);
 
   // Render Result View
   if (isFinished) {
@@ -123,11 +132,11 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
     const percent = Math.round((correctCount / activeQuestions.length) * 100);
 
     return (
-      <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mt-8">
+      <div className="max-w-4xl mx-auto bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mt-8">
         <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">{t.testComplete}</h2>
-            <div className="text-6xl font-black text-primary mb-4">{percent}%</div>
-            <div className="flex justify-center gap-6 text-sm text-slate-500">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.testComplete}</h2>
+            <div className="text-6xl font-black text-primary dark:text-blue-400 mb-4">{percent}%</div>
+            <div className="flex justify-center gap-6 text-sm text-slate-500 dark:text-slate-400">
                 <span className="flex items-center"><Check className="w-4 h-4 mr-1 text-green-500"/> {correctCount} {t.correct}</span>
                 <span className="flex items-center"><X className="w-4 h-4 mr-1 text-red-500"/> {activeQuestions.length - correctCount} {t.incorrect}</span>
                 <span className="flex items-center"><Clock className="w-4 h-4 mr-1"/> {Math.floor(elapsed / 60)}m {elapsed % 60}s</span>
@@ -135,7 +144,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
         </div>
 
         <div className="space-y-6">
-            <h3 className="font-bold text-slate-700 border-b pb-2">{t.reviewAnswers}</h3>
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-2">{t.reviewAnswers}</h3>
             {activeQuestions.map((q, idx) => {
                 const userAnswer = answers[q.id];
                 const isCorrect = userAnswer === q.correctOptionId;
@@ -143,18 +152,18 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
                 const userOpt = q.options.find(o => o.id === userAnswer);
 
                 return (
-                    <div key={q.id} className={`p-4 rounded-lg border ${isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+                    <div key={q.id} className={`p-4 rounded-lg border ${isCorrect ? 'border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/20' : 'border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/20'}`}>
                         <div className="flex gap-3">
-                            <span className="font-bold text-slate-500">{idx + 1}.</span>
+                            <span className="font-bold text-slate-500 dark:text-slate-400">{idx + 1}.</span>
                             <div className="flex-1">
-                                <p className="font-medium text-slate-900 mb-2">{q.text}</p>
+                                <p className="font-medium text-slate-900 dark:text-slate-100 mb-2">{q.text}</p>
                                 <div className="text-sm space-y-1">
                                     {!isCorrect && (
-                                        <p className="text-red-700">{t.yourAnswer} <span className="font-semibold">{userOpt?.text || t.skipped}</span></p>
+                                        <p className="text-red-700 dark:text-red-400">{t.yourAnswer} <span className="font-semibold">{userOpt?.text || t.skipped}</span></p>
                                     )}
-                                    <p className="text-green-700">{t.correctAnswer} <span className="font-semibold">{correctOpt?.text}</span></p>
+                                    <p className="text-green-700 dark:text-green-400">{t.correctAnswer} <span className="font-semibold">{correctOpt?.text}</span></p>
                                 </div>
-                                <div className="mt-3 text-sm text-slate-600 bg-white/50 p-3 rounded">
+                                <div className="mt-3 text-sm text-slate-600 dark:text-slate-300 bg-white/50 dark:bg-slate-700/50 p-3 rounded">
                                     <span className="font-semibold">{t.explanation}:</span> {q.explanation}
                                 </div>
                             </div>
@@ -165,10 +174,10 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
         </div>
 
         <div className="mt-8 flex justify-center space-x-4">
-            <button onClick={() => navigate(`/subject/${subjectId}`)} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition-colors">
+            <button onClick={() => navigate(`/subject/${subjectId}`)} className="px-6 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
                 {t.backToSubject}
             </button>
-            <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center">
+            <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors flex items-center">
                 <RotateCcw className="w-4 h-4 mr-2" /> {t.retryTest}
             </button>
         </div>
@@ -176,24 +185,24 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
     );
   }
 
-  if (!currentQuestion) return <div className="p-8 text-center">{t.loading}</div>;
+  if (!currentQuestion) return <div className="p-8 text-center text-slate-900 dark:text-slate-100">{t.loading}</div>;
 
   // Determine visual states based on Mode
   const showResult = mode === TestMode.READING || (mode === TestMode.STUDY && hasAnswered);
   
   return (
-    <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-80px)]">
+    <div className="max-w-3xl mx-auto flex flex-col min-h-0 h-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+      <div className="flex items-center justify-between mb-6 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
          <div className="flex items-center space-x-4">
-            <span className="text-xl font-bold text-primary">Q{currentIndex + 1}<span className="text-slate-400 text-base font-normal">/{activeQuestions.length}</span></span>
-            <div className="h-8 w-px bg-slate-200"></div>
-            <div className="text-slate-500 text-sm font-mono">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, '0')}</div>
+            <span className="text-xl font-bold text-primary dark:text-blue-400">Q{currentIndex + 1}<span className="text-slate-400 dark:text-slate-500 text-base font-normal">/{activeQuestions.length}</span></span>
+            <div className="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
+            <div className="text-slate-500 dark:text-slate-400 text-sm font-mono">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, '0')}</div>
          </div>
          <div className="flex space-x-2">
              <button 
                 onClick={() => onToggleBookmark(currentQuestion.id)}
-                className={`p-2 rounded-lg transition-colors ${isBookmarked ? 'text-blue-600 bg-blue-50' : 'text-slate-400 hover:bg-slate-50'}`}
+                className={`p-2 rounded-lg transition-colors ${isBookmarked ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
              >
                  <Flag className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
              </button>
@@ -201,16 +210,16 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full h-2 bg-slate-200 rounded-full mb-6 overflow-hidden">
+      <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full mb-6 overflow-hidden">
         <div 
-            className="h-full bg-primary transition-all duration-300"
+            className="h-full bg-primary dark:bg-blue-600 transition-all duration-300"
             style={{ width: `${((currentIndex + 1) / activeQuestions.length) * 100}%` }}
         />
       </div>
 
       {/* Question Card */}
-      <div className="flex-1 overflow-y-auto mb-6">
-        <h2 className="text-xl md:text-2xl font-semibold text-slate-800 mb-6 leading-relaxed">
+      <div className="flex-1 min-h-0 overflow-y-auto mb-6 pb-4">
+        <h2 className="text-xl md:text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6 leading-relaxed">
             {currentQuestion.text}
         </h2>
 
@@ -219,20 +228,20 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
                 const isSelected = answers[currentQuestion.id] === opt.id;
                 const isCorrect = opt.id === currentQuestion.correctOptionId;
                 
-                let buttonClass = "border-slate-200 hover:bg-slate-50"; // Default
-                let icon = <span className="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center text-xs font-bold text-slate-400 mr-3">{String.fromCharCode(65 + idx)}</span>;
+                let buttonClass = "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50"; // Default
+                let icon = <span className="w-6 h-6 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center text-xs font-bold text-slate-400 dark:text-slate-500 mr-3">{String.fromCharCode(65 + idx)}</span>;
 
                 if (showResult) {
                     if (isCorrect) {
-                        buttonClass = "border-green-500 bg-green-50 ring-1 ring-green-500";
-                        icon = <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mr-3"><Check className="w-4 h-4 text-white"/></div>;
+                        buttonClass = "border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/30 ring-1 ring-green-500 dark:ring-green-600";
+                        icon = <div className="w-6 h-6 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center mr-3"><Check className="w-4 h-4 text-white"/></div>;
                     } else if (isSelected) {
-                        buttonClass = "border-red-500 bg-red-50 ring-1 ring-red-500";
-                        icon = <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mr-3"><X className="w-4 h-4 text-white"/></div>;
+                        buttonClass = "border-red-500 dark:border-red-600 bg-red-50 dark:bg-red-900/30 ring-1 ring-red-500 dark:ring-red-600";
+                        icon = <div className="w-6 h-6 rounded-full bg-red-500 dark:bg-red-600 flex items-center justify-center mr-3"><X className="w-4 h-4 text-white"/></div>;
                     }
                 } else if (isSelected) {
-                    buttonClass = "border-primary bg-blue-50 ring-1 ring-primary";
-                    icon = <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3 text-white font-bold">{String.fromCharCode(65 + idx)}</div>;
+                    buttonClass = "border-primary dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-1 ring-primary dark:ring-blue-500";
+                    icon = <div className="w-6 h-6 rounded-full bg-primary dark:bg-blue-600 flex items-center justify-center mr-3 text-white font-bold">{String.fromCharCode(65 + idx)}</div>;
                 }
 
                 return (
@@ -243,7 +252,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
                         className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center ${buttonClass}`}
                     >
                         {icon}
-                        <span className={`text-lg ${isSelected || (showResult && isCorrect) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{opt.text}</span>
+                        <span className={`text-lg ${isSelected || (showResult && isCorrect) ? 'font-medium text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300'}`}>{opt.text}</span>
                     </button>
                 );
             })}
@@ -251,11 +260,11 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
 
         {/* Explanation Block (Study/Reading Mode) */}
         {showResult && (
-            <div className="mt-8 bg-blue-50 border border-blue-100 p-5 rounded-xl animate-in fade-in slide-in-from-bottom-2">
-                <h4 className="font-bold text-blue-900 mb-2 flex items-center">
+            <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-700 p-5 rounded-xl animate-in fade-in slide-in-from-bottom-2">
+                <h4 className="font-bold text-blue-900 dark:text-blue-300 mb-2 flex items-center">
                     <CheckCircle2 className="w-4 h-4 mr-2" /> {t.explanation}
                 </h4>
-                <p className="text-blue-800 leading-relaxed">
+                <p className="text-blue-800 dark:text-blue-400 leading-relaxed">
                     {currentQuestion.explanation}
                 </p>
             </div>
@@ -263,11 +272,11 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
       </div>
 
       {/* Footer Navigation */}
-      <div className="flex justify-between items-center py-4 bg-slate-50 border-t border-slate-200">
+      <div className="flex-shrink-0 flex justify-between items-center py-4 border-t border-slate-200 dark:border-slate-700">
           <button 
             onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
             disabled={currentIndex === 0}
-            className="flex items-center px-4 py-2 text-slate-600 hover:bg-white rounded-lg disabled:opacity-50 transition-colors"
+            className="flex items-center px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-lg disabled:opacity-50 transition-colors"
           >
              <ChevronLeft className="w-5 h-5 mr-1" /> {t.previous}
           </button>
@@ -275,19 +284,30 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
           {currentIndex === activeQuestions.length - 1 ? (
              <button 
                 onClick={finishTest}
-                className="flex items-center px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 shadow-md shadow-green-200 transition-all font-bold"
+                className="flex items-center px-6 py-3 bg-green-600 dark:bg-green-700 text-white rounded-xl hover:bg-green-700 dark:hover:bg-green-600 shadow-md shadow-green-200 dark:shadow-green-900/30 transition-all font-bold"
              >
                 {t.finishTest} <Save className="w-4 h-4 ml-2" />
              </button>
           ) : (
              <button 
                 onClick={() => setCurrentIndex(prev => Math.min(activeQuestions.length - 1, prev + 1))}
-                className="flex items-center px-6 py-3 bg-primary text-white rounded-xl hover:bg-blue-700 shadow-md shadow-blue-200 transition-all font-bold"
+                className="flex items-center px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-xl hover:bg-blue-700 dark:hover:bg-blue-500 shadow-md shadow-blue-200 dark:shadow-blue-900/30 transition-all font-bold"
              >
                 {t.nextQuestion} <ChevronRight className="w-4 h-4 ml-1" />
              </button>
           )}
       </div>
+      
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+      />
     </div>
   );
 };
