@@ -1,0 +1,50 @@
+import React from 'react';
+
+interface LogoProps {
+  className?: string;
+  size?: number;
+  showText?: boolean;
+}
+
+const Logo: React.FC<LogoProps> = ({ className = '', size = 32, showText = true }) => {
+  return (
+    <div className={`flex items-center space-x-2 ${className}`}>
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 512 512" 
+        width={size} 
+        height={size}
+        className="flex-shrink-0"
+      >
+        {/* Main Icon Group */}
+        <g transform="translate(-4,25) scale(1.3)" stroke="#2563EB" strokeWidth="24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          
+          {/* Book Outline */}
+          {/* Left Page */}
+          <path d="M 200 60 Q 100 100 40 60 V 280 Q 100 320 200 280 Z" />
+          {/* Right Page */}
+          <path d="M 200 60 Q 300 100 360 60 V 280 Q 300 320 200 280 Z" />
+          {/* Spine */}
+          <line x1="200" y1="60" x2="200" y2="280" strokeWidth="16" />
+
+          {/* Content on Left Page (Study Lines) */}
+          <line x1="80" y1="140" x2="160" y2="140" strokeWidth="16" opacity="1" />
+          <line x1="80" y1="190" x2="160" y2="190" strokeWidth="16" opacity="1" />
+          <line x1="80" y1="240" x2="140" y2="240" strokeWidth="16" opacity="1" />
+
+          {/* Content on Right Page (Test Checkmark) */}
+          {/* Circle around checkmark for emphasis */}
+          <circle cx="280" cy="183" r="45" strokeWidth="12" opacity="1" />
+          {/* The Checkmark */}
+          <path d="M 260 185 L 275 200 L 300 170" strokeWidth="12" opacity="1" />
+
+        </g>
+      </svg>
+      {showText && (
+        <span className="font-bold text-xl text-primary">StudyWithTest</span>
+      )}
+    </div>
+  );
+};
+
+export default Logo;

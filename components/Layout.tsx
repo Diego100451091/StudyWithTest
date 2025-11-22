@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { BookOpen, Menu, X, Home, History, Wand2, Download, Upload, Settings, HelpCircle, Languages, Cloud, LogOut, RefreshCw, AlertCircle } from 'lucide-react';
 import { Language, getTranslation } from '../services/translations';
 import { FirebaseAuthState, firebaseService } from '../services/firebase';
+import Logo from './Logo';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -107,9 +108,8 @@ const Layout: React.FC<LayoutProps> = ({
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-100">
-          <Link to="/" className="flex items-center space-x-2 text-primary font-bold text-xl">
-            <BookOpen className="w-6 h-6" />
-            <span>StudyWithTest</span>
+          <Link to="/" className="flex items-center">
+            <Logo size={32} showText={true} />
           </Link>
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-500">
             <X className="w-6 h-6" />
@@ -225,7 +225,7 @@ const Layout: React.FC<LayoutProps> = ({
           <button onClick={() => setIsSidebarOpen(true)} className="text-slate-600">
             <Menu className="w-6 h-6" />
           </button>
-          <span className="font-semibold text-slate-800">StudyWithTest</span>
+          <Logo size={28} showText={false} />
           <div className="flex items-center space-x-2">
             <button 
               onClick={onToggleLanguage}

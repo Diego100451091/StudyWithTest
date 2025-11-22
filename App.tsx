@@ -9,6 +9,7 @@ import HistoryView from './components/HistoryView';
 import Tutorial from './components/Tutorial';
 import { DataConflictModal } from './components/DataConflictModal';
 import { AuthModal } from './components/AuthModal';
+import Logo from './components/Logo';
 import { useStore } from './services/store';
 
 const App: React.FC = () => {
