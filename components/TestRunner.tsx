@@ -191,7 +191,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
   const showResult = mode === TestMode.READING || (mode === TestMode.STUDY && hasAnswered);
   
   return (
-    <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-80px)]">
+    <div className="max-w-3xl mx-auto flex flex-col min-h-0 h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
          <div className="flex items-center space-x-4">
@@ -218,7 +218,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
       </div>
 
       {/* Question Card */}
-      <div className="flex-1 overflow-y-auto mb-6">
+      <div className="flex-1 min-h-0 overflow-y-auto mb-6 pb-4">
         <h2 className="text-xl md:text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6 leading-relaxed">
             {currentQuestion.text}
         </h2>
@@ -272,7 +272,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
       </div>
 
       {/* Footer Navigation */}
-      <div className="flex justify-between items-center py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700">
+      <div className="flex-shrink-0 flex justify-between items-center py-4 border-t border-slate-200 dark:border-slate-700">
           <button 
             onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
             disabled={currentIndex === 0}
