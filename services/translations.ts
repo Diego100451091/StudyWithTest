@@ -83,6 +83,16 @@ export interface Translations {
   correctAnswer: string;
   backToSubject: string;
   retryTest: string;
+  retryFailed: string;
+  selectTestMode: string;
+  selectTestModeDescription: string;
+  readingModeDesc: string;
+  studyModeDesc: string;
+  examModeDesc: string;
+  startTest: string;
+  clearFailedQuestions: string;
+  clearFailedQuestionsConfirm: string;
+  runTest: string;
   previous: string;
   nextQuestion: string;
   finishTest: string;
@@ -330,6 +340,16 @@ export const translations: Record<Language, Translations> = {
     correctAnswer: 'Respuesta correcta:',
     backToSubject: 'Volver a la Asignatura',
     retryTest: 'Repetir Test',
+    retryFailed: 'Repasar Falladas',
+    selectTestMode: 'Selecciona el Modo de Test',
+    selectTestModeDescription: 'Elige cómo quieres realizar este test:',
+    readingModeDesc: 'Ver todas las respuestas correctas mientras lees las preguntas. Ideal para familiarizarte con el contenido.',
+    studyModeDesc: 'Responde y ve la explicación inmediatamente. Perfecto para aprender y entender los conceptos.',
+    examModeDesc: 'Modo examen real. Las respuestas se revelan solo al finalizar. Pon a prueba tus conocimientos.',
+    startTest: 'Iniciar Test',
+    clearFailedQuestions: 'Resetear preguntas falladas',
+    clearFailedQuestionsConfirm: '¿Estás seguro de que deseas limpiar todas las preguntas falladas de esta asignatura? Esta acción no se puede deshacer.',
+    runTest: 'Ejecutar test',
     previous: 'Anterior',
     nextQuestion: 'Siguiente Pregunta',
     finishTest: 'Finalizar Test',
@@ -576,6 +596,16 @@ export const translations: Record<Language, Translations> = {
     correctAnswer: 'Correct answer:',
     backToSubject: 'Back to Subject',
     retryTest: 'Retry Test',
+    retryFailed: 'Review Failed',
+    selectTestMode: 'Select Test Mode',
+    selectTestModeDescription: 'Choose how you want to take this test:',
+    readingModeDesc: 'See all correct answers while reading questions. Ideal for familiarizing yourself with content.',
+    studyModeDesc: 'Answer and see explanation immediately. Perfect for learning and understanding concepts.',
+    examModeDesc: 'Real exam mode. Answers revealed only at the end. Test your knowledge.',
+    startTest: 'Start Test',
+    clearFailedQuestions: 'Reset failed questions',
+    clearFailedQuestionsConfirm: 'Are you sure you want to clear all failed questions for this subject? This action cannot be undone.',
+    runTest: 'Run test',
     previous: 'Previous',
     nextQuestion: 'Next Question',
     finishTest: 'Finish Test',

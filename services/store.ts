@@ -558,6 +558,22 @@ export const useStore = () => {
     });
   };
 
+  const clearFailedQuestionsForSubject = (subjectId: string) => {
+    setData(prev => {
+      // Get all question IDs for this subject
+      const subjectTests = prev.tests.filter(t => t.subjectId === subjectId);
+      const subjectQuestionIds = new Set(subjectTests.flatMap(t => t.questions.map(q => q.id)));
+      
+      // Filter out failed questions that belong to this subject
+      const newFailedIds = prev.failedQuestionIds.filter(qid => !subjectQuestionIds.has(qid));
+      
+      return {
+        ...prev,
+        failedQuestionIds: newFailedIds
+      };
+    });
+  };
+
   const exportData = () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -749,6 +765,7 @@ export const useStore = () => {
     saveResult,
     deleteResult,
     toggleBookmark,
+    clearFailedQuestionsForSubject,
     exportData,
     importData,
     signInWithEmail,

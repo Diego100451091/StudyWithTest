@@ -41,6 +41,7 @@ const App: React.FC = () => {
     saveResult,
     deleteResult,
     toggleBookmark,
+    clearFailedQuestionsForSubject,
     exportData,
     importData,
     signInWithEmail,
@@ -122,6 +123,7 @@ const App: React.FC = () => {
                     onAddTest={addTest}
                     onDeleteTest={deleteTest}
                     onUpdateTest={updateTest}
+                    onClearFailedQuestions={clearFailedQuestionsForSubject}
                 />
             } 
           />

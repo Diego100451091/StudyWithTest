@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Play, Trash2, Clock, HelpCircle, CheckCircle2, AlertTriangle, MoreHorizontal, Edit, ListChecks } from 'lucide-react';
+import { ArrowLeft, Plus, Play, Trash2, Clock, HelpCircle, CheckCircle2, AlertTriangle, MoreHorizontal, Edit, ListChecks, RotateCcw, MoreVertical } from 'lucide-react';
 import { UserData, Test, Subject, TestMode } from '../types';
 import { Language, getTranslation } from '../services/translations';
 import TestEditor from './TestEditor';
@@ -13,9 +13,10 @@ interface SubjectDetailProps {
   onAddTest: (test: Test) => void;
   onDeleteTest: (id: string) => void;
   onUpdateTest: (test: Test) => void;
+  onClearFailedQuestions: (subjectId: string) => void;
 }
 
-const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest, onDeleteTest, onUpdateTest }) => {
+const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest, onDeleteTest, onUpdateTest, onClearFailedQuestions }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedTests, setSelectedTests] = useState<Set<string>>(new Set());
@@ -23,6 +24,9 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
   const [shuffleAnswers, setShuffleAnswers] = useState(false);
+  const [showModeSelector, setShowModeSelector] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{type: 'selected' | 'failed' | 'bookmarked', ids?: string} | null>(null);
+  const [showFailedMenu, setShowFailedMenu] = useState(false);
   const t = getTranslation(language);
   const { modalState, showConfirm, closeModal } = useModal();
   
@@ -85,6 +89,30 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
   const handleRunBookmarked = (mode: TestMode) => {
     const query = buildRunUrl(`type=bookmarked&mode=${mode}`);
     navigate(`/run/${id}?${query}`);
+  };
+
+  const openModeSelector = (type: 'selected' | 'failed' | 'bookmarked', ids?: string) => {
+    setPendingAction({type, ids});
+    setShowModeSelector(true);
+  };
+
+  const executeModeSelection = (mode: TestMode) => {
+    if (!pendingAction) return;
+    
+    switch(pendingAction.type) {
+      case 'selected':
+        handleRunTests(mode);
+        break;
+      case 'failed':
+        handleRunFailed(mode);
+        break;
+      case 'bookmarked':
+        handleRunBookmarked(mode);
+        break;
+    }
+    
+    setShowModeSelector(false);
+    setPendingAction(null);
   };
 
   const handleEditTest = (test: Test, e: React.MouseEvent) => {
@@ -174,14 +202,69 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
             <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{t.attempts}</p>
             <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">{totalAttempts}</p>
          </div>
-         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer hover:border-amber-300 dark:hover:border-amber-500 transition-colors" onClick={() => failedIdsInSubject.length > 0 && handleRunFailed(TestMode.STUDY)}>
-            <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{t.failedQuestions}</p>
-            <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{failedIdsInSubject.length}</p>
-                {failedIdsInSubject.length > 0 && <Play className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm relative">
+            <div 
+              className={`cursor-pointer ${failedIdsInSubject.length > 0 ? 'hover:bg-amber-50 dark:hover:bg-amber-900/10' : ''} transition-colors rounded-lg p-2 -m-2`}
+              onClick={() => failedIdsInSubject.length > 0 && openModeSelector('failed')}
+            >
+              <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{t.failedQuestions}</p>
+              <div className="flex items-center justify-between">
+                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{failedIdsInSubject.length}</p>
+              </div>
             </div>
+            {failedIdsInSubject.length > 0 && (
+              <div className="absolute top-2 right-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowFailedMenu(!showFailedMenu);
+                  }}
+                  className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300 transition-all"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+                {showFailedMenu && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setShowFailedMenu(false)}
+                    />
+                    <div className="absolute right-0 top-10 z-50 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[180px]">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowFailedMenu(false);
+                          openModeSelector('failed');
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"
+                      >
+                        <Play className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        {t.runTest}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowFailedMenu(false);
+                          showConfirm(
+                            t.warning,
+                            t.clearFailedQuestionsConfirm,
+                            () => onClearFailedQuestions(id!),
+                            t.confirm,
+                            t.cancel
+                          );
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        {t.clearFailedQuestions}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
          </div>
-         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 transition-colors" onClick={() => bookmarkedIdsInSubject.length > 0 && handleRunBookmarked(TestMode.STUDY)}>
+         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-500 transition-colors" onClick={() => bookmarkedIdsInSubject.length > 0 && openModeSelector('bookmarked')}>
             <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{t.bookmarked}</p>
             <div className="flex items-center justify-between">
                 <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{bookmarkedIdsInSubject.length}</p>
@@ -209,24 +292,11 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
                 <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase mr-2 hidden md:inline">{t.startSelected}</span>
                 <button 
                     disabled={selectedTests.size === 0}
-                    onClick={() => handleRunTests(TestMode.READING)}
-                    className="disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    onClick={() => openModeSelector('selected')}
+                    className="disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 text-sm bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors shadow-sm font-medium flex items-center gap-2"
                 >
-                    {t.reading}
-                </button>
-                <button 
-                    disabled={selectedTests.size === 0}
-                    onClick={() => handleRunTests(TestMode.STUDY)}
-                    className="disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors font-medium"
-                >
-                    {t.study}
-                </button>
-                <button 
-                    disabled={selectedTests.size === 0}
-                    onClick={() => handleRunTests(TestMode.EXAM)}
-                    className="disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 text-sm bg-primary dark:bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors shadow-sm"
-                >
-                    {t.exam}
+                    <Play className="w-4 h-4" />
+                    {t.startTest}
                 </button>
             </div>
           </div>
@@ -333,6 +403,70 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
         confirmText={modalState.confirmText}
         cancelText={modalState.cancelText}
       />
+
+      {/* Mode Selector Modal */}
+      {showModeSelector && (
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setShowModeSelector(false)}>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.selectTestMode}</h3>
+            <p className="text-slate-500 dark:text-slate-400 mb-6">{t.selectTestModeDescription}</p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={() => executeModeSelection(TestMode.READING)}
+                className="w-full text-left p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all group"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg group-hover:bg-slate-200 dark:group-hover:bg-slate-600 transition-colors">
+                    <HelpCircle className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">{t.readingMode}</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{t.readingModeDesc}</p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => executeModeSelection(TestMode.STUDY)}
+                className="w-full text-left p-4 rounded-xl border-2 border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all group"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-700 transition-colors">
+                    <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">{t.studyMode}</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{t.studyModeDesc}</p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => executeModeSelection(TestMode.EXAM)}
+                className="w-full text-left p-4 rounded-xl border-2 border-primary dark:border-blue-600 hover:border-blue-700 dark:hover:border-blue-500 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all group"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-600 dark:bg-blue-700 rounded-lg group-hover:bg-blue-700 dark:group-hover:bg-blue-600 transition-colors">
+                    <AlertTriangle className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">{t.examMode}</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{t.examModeDesc}</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowModeSelector(false)}
+              className="mt-4 w-full px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              {t.cancel}
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

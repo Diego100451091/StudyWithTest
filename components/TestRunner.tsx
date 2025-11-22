@@ -67,6 +67,12 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
         const subjectTests = data.tests.filter(t => t.subjectId === subjectId);
         const allQ = subjectTests.flatMap(t => t.questions);
         pool = allQ.filter(q => data.bookmarkedQuestionIds.includes(q.id));
+    } else if (type === 'specific') {
+        // Specific question IDs provided
+        const qids = searchParams.get('qids')?.split(',') || [];
+        const subjectTests = data.tests.filter(t => t.subjectId === subjectId);
+        const allQ = subjectTests.flatMap(t => t.questions);
+        pool = allQ.filter(q => qids.includes(q.id));
     } else {
         // Normal selection
         const selectedTests = data.tests.filter(t => testIds.includes(t.id));
@@ -97,6 +103,13 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
   const currentQuestion = activeQuestions[currentIndex];
   const isBookmarked = currentQuestion && data.bookmarkedQuestionIds.includes(currentQuestion.id);
   const hasAnswered = currentQuestion && !!answers[currentQuestion.id];
+
+  const buildRunUrl = (baseParams: string) => {
+    const params = new URLSearchParams(baseParams);
+    if (shouldShuffleQuestions) params.set('shuffleQ', '1');
+    if (shouldShuffleAnswers) params.set('shuffleA', '1');
+    return params.toString();
+  };
 
   const handleSelectOption = (optionId: string) => {
     if (isFinished) return;
@@ -186,11 +199,27 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
             })}
         </div>
 
-        <div className="mt-8 flex justify-center space-x-4">
+        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3">
             <button onClick={() => navigate(`/subject/${subjectId}`)} className="px-6 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
                 {t.backToSubject}
             </button>
-            <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors flex items-center">
+            {correctCount < activeQuestions.length && (
+              <button 
+                onClick={() => {
+                  const failedQIds = activeQuestions
+                    .filter(q => answers[q.id] !== q.correctOptionId)
+                    .map(q => q.id)
+                    .join(',');
+                  const query = buildRunUrl(`type=specific&qids=${failedQIds}&mode=${mode}`);
+                  navigate(`/run/${subjectId}?${query}`);
+                  window.location.reload();
+                }} 
+                className="px-6 py-3 bg-amber-600 dark:bg-amber-700 text-white rounded-xl font-medium hover:bg-amber-700 dark:hover:bg-amber-600 transition-colors flex items-center justify-center"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" /> {t.retryFailed}
+              </button>
+            )}
+            <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors flex items-center justify-center">
                 <RotateCcw className="w-4 h-4 mr-2" /> {t.retryTest}
             </button>
         </div>
