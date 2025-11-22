@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
 import { UserData, TestResult, TestMode } from '../types';
 import { Language, getTranslation, getTestModeTranslation } from '../services/translations';
-import { Calendar, Target, Clock, Trash2, Eye, X, Check } from 'lucide-react';
+import { Calendar, Target, Clock, Trash2, Eye, X, Check, ArrowLeft } from 'lucide-react';
 import Modal from './Modal';
 import { useModal } from '../hooks/useModal';
 
@@ -50,40 +50,45 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
     return (
       <div className="max-w-4xl mx-auto">
         {/* Header del visor */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6">
+          <button
+            onClick={() => setViewingResultId(null)}
+            className="inline-flex items-center text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 mb-4 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" /> {t.backToHistory}
+          </button>
+          <div className="flex items-center space-x-4">
+            <div className={`w-4 h-12 rounded-r-lg`} style={{backgroundColor: subject?.color || '#cbd5e1'}}></div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{subject?.name || t.unknownSubject}</h1>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{subject?.name || t.unknownSubject}</h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center mt-1">
                 <Calendar className="w-4 h-4 mr-1" /> {new Date(result.date).toLocaleDateString()}
                 <span className="mx-2">•</span>
                 <Target className="w-4 h-4 mr-1" /> {getTestModeTranslation(result.mode, language)}
               </p>
             </div>
-            <button
-              onClick={() => setViewingResultId(null)}
-              className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-            >
-              {t.backToHistory}
-            </button>
           </div>
-          
-          <div className="flex items-center gap-6 text-sm">
-            <div className={`text-3xl font-bold ${percent >= 70 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
-              {percent}%
-            </div>
-            <div className="flex gap-4">
-              <span className="flex items-center text-green-600 dark:text-green-400">
-                <Check className="w-4 h-4 mr-1" /> {result.score} {t.correct}
-              </span>
-              <span className="flex items-center text-red-600 dark:text-red-400">
-                <X className="w-4 h-4 mr-1" /> {result.totalQuestions - result.score} {t.incorrect}
-              </span>
-              <span className="flex items-center text-slate-500 dark:text-slate-400">
-                <Clock className="w-4 h-4 mr-1" /> {Math.floor(result.timeTaken / 60)}m {result.timeTaken % 60}s
-              </span>
-            </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{language === 'es' ? 'Puntuación' : 'Score'}</p>
+            <p className={`text-2xl font-bold ${percent >= 70 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>{percent}%</p>
           </div>
+           <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{language === 'es' ? 'Tiempo' : 'Time'}</p>
+            <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">{Math.floor(result.timeTaken / 60)}:{String(result.timeTaken % 60).padStart(2, '0')}</p>
+          </div>
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{t.correct}</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{result.score}</p>
+          </div>
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">{t.incorrect}</p>
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{result.totalQuestions - result.score}</p>
+          </div>
+         
         </div>
 
         {/* Lista de preguntas */}
