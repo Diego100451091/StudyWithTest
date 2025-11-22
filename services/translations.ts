@@ -54,6 +54,9 @@ export interface Translations {
   generateWithAI: string;
   createTestManually: string;
   newTest: string;
+  shuffleQuestions: string;
+  shuffleAnswers: string;
+  testOptions: string;
   
   // Test Editor
   testTitle: string;
@@ -298,6 +301,9 @@ export const translations: Record<Language, Translations> = {
     generateWithAI: 'Genera uno con IA',
     createTestManually: 'Crear Test Manualmente',
     newTest: 'Nuevo Test',
+    shuffleQuestions: 'Desordenar preguntas',
+    shuffleAnswers: 'Desordenar respuestas',
+    testOptions: 'Opciones de test',
     
     // Test Editor
     testTitle: 'Título del Test',
@@ -541,6 +547,9 @@ export const translations: Record<Language, Translations> = {
     generateWithAI: 'Generate one with AI',
     createTestManually: 'Create Test Manually',
     newTest: 'New Test',
+    shuffleQuestions: 'Shuffle questions',
+    shuffleAnswers: 'Shuffle answers',
+    testOptions: 'Test options',
     
     // Test Editor
     testTitle: 'Test Title',

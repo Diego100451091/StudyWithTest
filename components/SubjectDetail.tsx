@@ -21,6 +21,8 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
   const [selectedTests, setSelectedTests] = useState<Set<string>>(new Set());
   const [editingTest, setEditingTest] = useState<Test | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [shuffleQuestions, setShuffleQuestions] = useState(false);
+  const [shuffleAnswers, setShuffleAnswers] = useState(false);
   const t = getTranslation(language);
   const { modalState, showConfirm, closeModal } = useModal();
   
@@ -54,24 +56,35 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
     setSelectedTests(next);
   };
 
+  const buildRunUrl = (baseParams: string) => {
+    const params = new URLSearchParams(baseParams);
+    if (shuffleQuestions) params.set('shuffleQ', '1');
+    if (shuffleAnswers) params.set('shuffleA', '1');
+    return params.toString();
+  };
+
   const handleRunTests = (mode: TestMode) => {
     if (selectedTests.size === 0) return;
     const idList = Array.from(selectedTests).join(',');
-    navigate(`/run/${id}?tests=${idList}&mode=${mode}`);
+    const query = buildRunUrl(`tests=${idList}&mode=${mode}`);
+    navigate(`/run/${id}?${query}`);
   };
 
   const handleRunAll = (mode: TestMode) => {
     const idList = tests.map(t => t.id).join(',');
     if(!idList) return;
-    navigate(`/run/${id}?tests=${idList}&mode=${mode}`);
+    const query = buildRunUrl(`tests=${idList}&mode=${mode}`);
+    navigate(`/run/${id}?${query}`);
   };
   
   const handleRunFailed = (mode: TestMode) => {
-    navigate(`/run/${id}?type=failed&mode=${mode}`);
+    const query = buildRunUrl(`type=failed&mode=${mode}`);
+    navigate(`/run/${id}?${query}`);
   };
 
   const handleRunBookmarked = (mode: TestMode) => {
-    navigate(`/run/${id}?type=bookmarked&mode=${mode}`);
+    const query = buildRunUrl(`type=bookmarked&mode=${mode}`);
+    navigate(`/run/${id}?${query}`);
   };
 
   const handleEditTest = (test: Test, e: React.MouseEvent) => {
@@ -179,7 +192,8 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
 
       {/* Action Bar */}
       {tests.length > 0 && (
-        <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur py-4 border-b border-slate-200 dark:border-slate-700 mb-6 flex flex-wrap items-center gap-3 justify-between">
+        <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur py-4 border-b border-slate-200 dark:border-slate-700 mb-6">
+          <div className="flex flex-wrap items-center gap-3 justify-between mb-3">
             <div className="flex items-center space-x-2">
                 <button 
                   onClick={() => setSelectedTests(new Set(selectedTests.size === tests.length ? [] : tests.map(t => t.id)))}
@@ -215,6 +229,30 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
                     {t.exam}
                 </button>
             </div>
+          </div>
+          
+          {/* Test Options */}
+          <div className="flex items-center gap-4 text-sm">
+            <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">{t.testOptions}:</span>
+            <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">
+              <input 
+                type="checkbox" 
+                checked={shuffleQuestions}
+                onChange={(e) => setShuffleQuestions(e.target.checked)}
+                className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:bg-slate-700"
+              />
+              {t.shuffleQuestions}
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">
+              <input 
+                type="checkbox" 
+                checked={shuffleAnswers}
+                onChange={(e) => setShuffleAnswers(e.target.checked)}
+                className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:bg-slate-700"
+              />
+              {t.shuffleAnswers}
+            </label>
+          </div>
         </div>
       )}
 

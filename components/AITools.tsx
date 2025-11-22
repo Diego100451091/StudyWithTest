@@ -35,13 +35,23 @@ const AITools: React.FC<AIToolsProps> = ({ subjects, language, onImportTest }) =
 
   const generatePrompt = () => {
     if (config.testMode === 'generate') {
-      return `Act as a professor. I need you to generate a multiple-choice test for me to study. 
+      return `Act as an expert Psychometrician and Professor. I need you to generate a high-quality multiple-choice test for me to study based on the provided text.
+
 Create a JSON object representing a test IN ${config.language.toUpperCase()}.
-Topic: ${config.focusTopic || 'General knowledge of the text provided'}
-Number of questions: ${config.allQuestions ? 'as many as appropriate based on the content' : config.numQuestions}
-Difficulty: ${config.difficulty}
-Number of options per question: ${config.numOptions}
-Language: ${config.language}
+
+Configuration:
+- Topic: ${config.focusTopic || 'General knowledge of the text provided'}
+- Number of questions: ${config.allQuestions ? 'as many as appropriate to cover the content comprehensively' : config.numQuestions}
+- Difficulty: ${config.difficulty}
+- Number of options per question: ${config.numOptions}
+- Language: ${config.language}
+
+CRITICAL QUALITY RULES (Follow these strictly):
+1. **Avoid Length Bias**: The correct answer must NOT be consistently longer or more detailed than the incorrect options (distractors). All options must be of similar length and complexity.
+2. **Plausible Distractors**: Incorrect options must be realistic and based on common misconceptions. Do not use obviously wrong or silly answers.
+3. **Avoid "Odd One Out"**: Do not make the correct answer obvious by being the only one with a different tone, category, or grammatical structure (e.g., do not have 3 positive options and 1 negative option if the question asks for the negative one, unless it requires knowledge to identify).
+4. **Deep Understanding**: Focus on testing comprehension and application of concepts rather than simple keyword matching.
+5. **Randomized Position**: Ensure the correct answer is not always in the same position.
 
 IMPORTANT: Generate ALL content (title, description, questions, options, and explanations) in ${config.language}.
 
@@ -55,12 +65,12 @@ Strictly follow this JSON structure (do not add markdown code blocks, just the r
       "text": "Question text here...",
       "options": ["Option A", "Option B", ...],
       "correctOptionIndex": 0, // Integer (0-based index of correct option)
-      "explanation": "Detailed explanation why the answer is correct."
+      "explanation": "Detailed explanation why the answer is correct and why others are incorrect."
     }
   ]
 }
 
-Ensure the content is accurate and educational.`;
+Ensure the content is accurate, educational, and challenging.`;
     } else {
       // Extract mode
       const topicFilter = config.focusTopic 

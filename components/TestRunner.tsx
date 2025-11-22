@@ -24,6 +24,8 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
   const testIds = searchParams.get('tests')?.split(',') || [];
   const mode = (searchParams.get('mode') as TestMode) || TestMode.STUDY;
   const type = searchParams.get('type'); // 'failed' | 'bookmarked' | undefined
+  const shouldShuffleQuestions = searchParams.get('shuffleQ') === '1';
+  const shouldShuffleAnswers = searchParams.get('shuffleA') === '1';
 
   // State
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
@@ -71,15 +73,26 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
         pool = selectedTests.flatMap(t => t.questions);
     }
 
-    // Shuffle
+    // Shuffle questions if requested
     if (pool.length > 0) {
-        const shuffled = [...pool].sort(() => Math.random() - 0.5);
-        setActiveQuestions(shuffled);
+        let finalPool = shouldShuffleQuestions 
+          ? [...pool].sort(() => Math.random() - 0.5)
+          : pool;
+        
+        // Shuffle answers if requested
+        if (shouldShuffleAnswers) {
+          finalPool = finalPool.map(q => ({
+            ...q,
+            options: [...q.options].sort(() => Math.random() - 0.5)
+          }));
+        }
+        
+        setActiveQuestions(finalPool);
     } else {
         showError(t.error, t.noQuestionsFound);
         navigate(-1);
     }
-  }, [data, testIds, type, subjectId, navigate, activeQuestions.length, showError, t]);
+  }, [data, testIds, type, subjectId, navigate, activeQuestions.length, showError, t, shouldShuffleQuestions, shouldShuffleAnswers]);
 
   const currentQuestion = activeQuestions[currentIndex];
   const isBookmarked = currentQuestion && data.bookmarkedQuestionIds.includes(currentQuestion.id);
@@ -191,7 +204,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
   const showResult = mode === TestMode.READING || (mode === TestMode.STUDY && hasAnswered);
   
   return (
-    <div className="max-w-3xl mx-auto flex flex-col min-h-0 h-full">
+    <div className="max-w-3xl mx-auto flex flex-col min-h-0 h-full pb-20 md:pb-0">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
          <div className="flex items-center space-x-4">
@@ -229,19 +242,19 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
                 const isCorrect = opt.id === currentQuestion.correctOptionId;
                 
                 let buttonClass = "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50"; // Default
-                let icon = <span className="w-6 h-6 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center text-xs font-bold text-slate-400 dark:text-slate-500 mr-3">{String.fromCharCode(65 + idx)}</span>;
+                let icon = <span className="w-6 h-6 aspect-square flex-shrink-0 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center text-xs font-bold text-slate-400 dark:text-slate-500 mr-3">{String.fromCharCode(65 + idx)}</span>;
 
                 if (showResult) {
                     if (isCorrect) {
                         buttonClass = "border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/30 ring-1 ring-green-500 dark:ring-green-600";
-                        icon = <div className="w-6 h-6 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center mr-3"><Check className="w-4 h-4 text-white"/></div>;
+                        icon = <div className="w-6 h-6 aspect-square flex-shrink-0 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center mr-3"><Check className="w-4 h-4 text-white"/></div>;
                     } else if (isSelected) {
                         buttonClass = "border-red-500 dark:border-red-600 bg-red-50 dark:bg-red-900/30 ring-1 ring-red-500 dark:ring-red-600";
-                        icon = <div className="w-6 h-6 rounded-full bg-red-500 dark:bg-red-600 flex items-center justify-center mr-3"><X className="w-4 h-4 text-white"/></div>;
+                        icon = <div className="w-6 h-6 aspect-square flex-shrink-0 rounded-full bg-red-500 dark:bg-red-600 flex items-center justify-center mr-3"><X className="w-4 h-4 text-white"/></div>;
                     }
                 } else if (isSelected) {
                     buttonClass = "border-primary dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-1 ring-primary dark:ring-blue-500";
-                    icon = <div className="w-6 h-6 rounded-full bg-primary dark:bg-blue-600 flex items-center justify-center mr-3 text-white font-bold">{String.fromCharCode(65 + idx)}</div>;
+                    icon = <div className="w-6 h-6 aspect-square flex-shrink-0 rounded-full bg-primary dark:bg-blue-600 flex items-center justify-center mr-3 text-white font-bold">{String.fromCharCode(65 + idx)}</div>;
                 }
 
                 return (
@@ -272,7 +285,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
       </div>
 
       {/* Footer Navigation */}
-      <div className="flex-shrink-0 flex justify-between items-center py-4 border-t border-slate-200 dark:border-slate-700">
+      <div className="flex-shrink-0 flex justify-between items-center py-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 fixed bottom-0 left-0 right-0 md:relative md:bg-transparent px-4 md:px-0 shadow-lg md:shadow-none z-10">
           <button 
             onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
             disabled={currentIndex === 0}
