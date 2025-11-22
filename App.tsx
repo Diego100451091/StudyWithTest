@@ -35,6 +35,7 @@ const App: React.FC = () => {
     updateTest, 
     deleteTest, 
     saveResult,
+    deleteResult,
     toggleBookmark,
     exportData,
     importData,
@@ -133,7 +134,7 @@ const App: React.FC = () => {
           />
           <Route 
             path="/history" 
-            element={<HistoryView data={data} language={language} />} 
+            element={<HistoryView data={data} language={language} onDeleteResult={deleteResult} />} 
           />
           <Route 
             path="/settings" 

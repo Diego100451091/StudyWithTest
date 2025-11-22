@@ -1,17 +1,27 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
 import { UserData, TestResult, TestMode } from '../types';
-import { Language, getTranslation } from '../services/translations';
-import { Calendar, Target, Clock } from 'lucide-react';
+import { Language, getTranslation, getTestModeTranslation } from '../services/translations';
+import { Calendar, Target, Clock, Trash2 } from 'lucide-react';
 
 interface HistoryViewProps {
   data: UserData;
   language: Language;
+  onDeleteResult: (id: string) => void;
 }
 
-const HistoryView: React.FC<HistoryViewProps> = ({ data, language }) => {
-  const results = [...data.results].sort((a, b) => a.date - b.date);
+const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResult }) => {
+  // Filtrar resultados para excluir tests en modo lectura
+  const results = [...data.results]
+    .filter(r => r.mode !== TestMode.READING)
+    .sort((a, b) => a.date - b.date);
   const t = getTranslation(language);
+
+  const handleDelete = (id: string) => {
+    if (window.confirm(t.deleteResultConfirm)) {
+      onDeleteResult(id);
+    }
+  };
 
   // Prepare Chart Data
   const chartData = results.slice(-20).map(r => ({
@@ -43,8 +53,8 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language }) => {
                 {/* Performance Trend */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <h3 className="text-lg font-bold mb-4 text-slate-700">{t.recentScoresTrend}</h3>
-                    <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div style={{ width: '100%', height: '256px' }}>
+                        <ResponsiveContainer>
                             <LineChart data={chartData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                                 <XAxis dataKey="date" tick={{fontSize: 12}} stroke="#94a3b8" />
@@ -61,8 +71,8 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language }) => {
                 {/* Subject Breakdown */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                     <h3 className="text-lg font-bold mb-4 text-slate-700">{t.avgScoreBySubject}</h3>
-                    <div className="h-64">
-                         <ResponsiveContainer width="100%" height="100%">
+                    <div style={{ width: '100%', height: '256px' }}>
+                         <ResponsiveContainer>
                             <BarChart data={subjectStats} layout="vertical">
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                                 <XAxis type="number" domain={[0, 100]} hide />
@@ -89,7 +99,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language }) => {
                         const subject = data.subjects.find(s => s.id === result.subjectId);
                         const percent = Math.round((result.score / result.totalQuestions) * 100);
                         return (
-                            <div key={result.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                            <div key={result.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
                                 <div className="flex items-center space-x-4">
                                     <div className={`w-2 h-10 rounded-full`} style={{backgroundColor: subject?.color || '#cbd5e1'}}></div>
                                     <div>
@@ -97,15 +107,24 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language }) => {
                                         <p className="text-xs text-slate-500 flex items-center">
                                             <Calendar className="w-3 h-3 mr-1" /> {new Date(result.date).toLocaleDateString()}
                                             <span className="mx-2">•</span>
-                                            <Target className="w-3 h-3 mr-1" /> {result.mode} {t.testMode}
+                                            <Target className="w-3 h-3 mr-1" /> {getTestModeTranslation(result.mode, language)}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <span className={`text-lg font-bold ${percent >= 70 ? 'text-green-600' : 'text-amber-600'}`}>
-                                        {percent}%
-                                    </span>
-                                    <p className="text-xs text-slate-400">{result.score}/{result.totalQuestions}</p>
+                                <div className="flex items-center space-x-4">
+                                    <div className="text-right">
+                                        <span className={`text-lg font-bold ${percent >= 70 ? 'text-green-600' : 'text-amber-600'}`}>
+                                            {percent}%
+                                        </span>
+                                        <p className="text-xs text-slate-400">{result.score}/{result.totalQuestions}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => handleDelete(result.id)}
+                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                        title={t.deleteResult}
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
                                 </div>
                             </div>
                         );

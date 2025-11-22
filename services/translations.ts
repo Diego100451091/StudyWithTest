@@ -42,6 +42,9 @@ export interface Translations {
   reading: string;
   study: string;
   exam: string;
+  readingMode: string;
+  studyMode: string;
+  examMode: string;
   questions: string;
   added: string;
   runOnlyThis: string;
@@ -121,6 +124,8 @@ export interface Translations {
   unknownSubject: string;
   testMode: string;
   results: string;
+  deleteResult: string;
+  deleteResultConfirm: string;
   
   // Tutorial
   welcome: string;
@@ -265,6 +270,9 @@ export const translations: Record<Language, Translations> = {
     reading: 'Lectura',
     study: 'Estudio',
     exam: 'Examen',
+    readingMode: 'Modo Lectura',
+    studyMode: 'Modo Estudio',
+    examMode: 'Modo Examen',
     questions: 'preguntas',
     added: 'Añadido',
     runOnlyThis: 'Ejecutar solo este test',
@@ -344,6 +352,8 @@ export const translations: Record<Language, Translations> = {
     unknownSubject: 'Asignatura Desconocida',
     testMode: 'Modo',
     results: 'Resultados',
+    deleteResult: 'Eliminar registro',
+    deleteResultConfirm: '¿Estás seguro de que deseas eliminar este resultado?',
     
     // Tutorial
     welcome: '¡Bienvenido a StudyWithTest!',
@@ -487,6 +497,9 @@ export const translations: Record<Language, Translations> = {
     reading: 'Reading',
     study: 'Study',
     exam: 'Exam',
+    readingMode: 'Reading Mode',
+    studyMode: 'Study Mode',
+    examMode: 'Exam Mode',
     questions: 'questions',
     added: 'Added',
     runOnlyThis: 'Run only this test',
@@ -566,6 +579,8 @@ export const translations: Record<Language, Translations> = {
     unknownSubject: 'Unknown Subject',
     testMode: 'Mode',
     results: 'Results',
+    deleteResult: 'Delete record',
+    deleteResultConfirm: 'Are you sure you want to delete this result?',
     
     // Tutorial
     welcome: 'Welcome to StudyWithTest!',
@@ -670,4 +685,18 @@ export const translations: Record<Language, Translations> = {
 
 export const getTranslation = (lang: Language): Translations => {
   return translations[lang];
+};
+
+export const getTestModeTranslation = (mode: string, lang: Language): string => {
+  const t = translations[lang];
+  switch(mode.toUpperCase()) {
+    case 'READING':
+      return t.readingMode;
+    case 'STUDY':
+      return t.studyMode;
+    case 'EXAM':
+      return t.examMode;
+    default:
+      return mode;
+  }
 };

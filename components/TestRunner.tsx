@@ -91,6 +91,12 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
   };
 
   const finishTest = useCallback(() => {
+    // En modo lectura, no guardamos resultados y regresamos directamente
+    if (mode === TestMode.READING) {
+      navigate(`/subject/${subjectId}`);
+      return;
+    }
+
     setIsFinished(true);
     
     const resultDetails: QuestionResult[] = activeQuestions.map(q => ({
@@ -115,7 +121,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
     };
 
     onSaveResult(result);
-  }, [activeQuestions, answers, elapsed, mode, onSaveResult, questionTimes, subjectId, testIds]);
+  }, [activeQuestions, answers, elapsed, mode, onSaveResult, questionTimes, subjectId, testIds, navigate]);
 
   // Render Result View
   if (isFinished) {

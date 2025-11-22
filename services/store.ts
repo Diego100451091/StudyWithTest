@@ -15,7 +15,7 @@ const FIREBASE_INIT_DELAY = 300;
 const FIREBASE_RETRY_DELAY = 500;
 const PERMISSION_RETRY_DELAY = 1000;
 const LOGOUT_COMPLETION_DELAY = 500;
-const SYNC_DEBOUNCE_DELAY = 2000;
+const SYNC_DEBOUNCE_DELAY = 500;
 const DATA_COMPLETION_DELAY = 100;
 
 const INITIAL_DATA: UserData = {
@@ -463,6 +463,11 @@ export const useStore = () => {
   };
 
   const updateTest = (test: Test) => {
+    console.log('%c[STORE] Updating test:', 'color: #10b981; font-weight: bold;', {
+      testId: test.id,
+      title: test.title,
+      questionsCount: test.questions.length
+    });
     setData(prev => ({
       ...prev,
       tests: prev.tests.map(t => t.id === test.id ? test : t)
@@ -495,6 +500,13 @@ export const useStore = () => {
         failedQuestionIds: Array.from(newFailedIds)
       };
     });
+  };
+
+  const deleteResult = (id: string) => {
+    setData(prev => ({
+      ...prev,
+      results: prev.results.filter(r => r.id !== id)
+    }));
   };
 
   const toggleBookmark = (questionId: string) => {
@@ -683,6 +695,7 @@ export const useStore = () => {
     updateTest,
     deleteTest,
     saveResult,
+    deleteResult,
     toggleBookmark,
     exportData,
     importData,
