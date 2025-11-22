@@ -21,6 +21,7 @@ const App: React.FC = () => {
     syncing,
     lastSync,
     conflictData,
+    isAuthLoading,
     openTutorial,
     closeTutorial,
     toggleLanguage,
@@ -39,7 +40,7 @@ const App: React.FC = () => {
     signOutFromGoogle,
     syncWithFirebase,
     resolveConflictKeepLocal,
-    resolveConflictKeepDrive,
+    resolveConflictKeepFirebase,
   } = useStore();
 
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -54,7 +55,11 @@ const App: React.FC = () => {
   }, [importData]);
 
   if (!loaded) {
-    return <div className="flex items-center justify-center h-screen bg-slate-50 text-slate-400">Loading StudyWithTest...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-slate-50 text-slate-400">
+        <div className="text-lg">Loading StudyWithTest...</div>
+      </div>
+    );
   }
 
   return (
@@ -140,16 +145,29 @@ const App: React.FC = () => {
       {conflictData && (
         <DataConflictModal
           localData={conflictData.local}
-          driveData={conflictData.drive}
+          firebaseData={conflictData.firebase}
           localChecksum={conflictData.localChecksum}
-          driveChecksum={conflictData.driveChecksum}
+          firebaseChecksum={conflictData.firebaseChecksum}
           localLastModified={conflictData.localLastModified}
-          driveLastModified={conflictData.driveLastModified}
+          firebaseLastModified={conflictData.firebaseLastModified}
           language={language}
           onSelectLocal={resolveConflictKeepLocal}
-          onSelectCloud={resolveConflictKeepDrive}
+          onSelectCloud={resolveConflictKeepFirebase}
           onClose={() => {}}
         />
+      )}
+      
+      {/* Overlay de loading durante autenticación/logout/descarga */}
+      {isAuthLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-[9999] flex items-center justify-center">
+          <div className="bg-white rounded-lg p-8 shadow-2xl text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-lg font-semibold text-slate-700">
+              {firebaseAuth.isSignedIn ? 'Cargando datos...' : 'Iniciando sesión...'}
+            </p>
+            <p className="text-sm text-slate-500 mt-2">Por favor espera</p>
+          </div>
+        </div>
       )}
     </HashRouter>
   );

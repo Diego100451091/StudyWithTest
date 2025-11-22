@@ -135,7 +135,7 @@ const Layout: React.FC<LayoutProps> = ({
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-100 bg-slate-50 space-y-4">
-          {/* Google Drive Section */}
+          {/* Firebase Section */}
           <div>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">Firebase Sync</p>
             {!firebaseService.isConfigured() ? (
