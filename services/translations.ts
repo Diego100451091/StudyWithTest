@@ -126,6 +126,11 @@ export interface Translations {
   results: string;
   deleteResult: string;
   deleteResultConfirm: string;
+  failed: string;
+  showDetails: string;
+  hideDetails: string;
+  viewTest: string;
+  backToHistory: string;
   
   // Tutorial
   welcome: string;
@@ -354,6 +359,11 @@ export const translations: Record<Language, Translations> = {
     results: 'Resultados',
     deleteResult: 'Eliminar registro',
     deleteResultConfirm: '¿Estás seguro de que deseas eliminar este resultado?',
+    failed: 'falladas',
+    showDetails: 'Mostrar detalles',
+    hideDetails: 'Ocultar detalles',
+    viewTest: 'Ver test completo',
+    backToHistory: 'Volver al historial',
     
     // Tutorial
     welcome: '¡Bienvenido a StudyWithTest!',
@@ -581,6 +591,11 @@ export const translations: Record<Language, Translations> = {
     results: 'Results',
     deleteResult: 'Delete record',
     deleteResultConfirm: 'Are you sure you want to delete this result?',
+    failed: 'failed',
+    showDetails: 'Show details',
+    hideDetails: 'Hide details',
+    viewTest: 'View full test',
+    backToHistory: 'Back to history',
     
     // Tutorial
     welcome: 'Welcome to StudyWithTest!',
