@@ -132,8 +132,8 @@ const Settings: React.FC<SettingsProps> = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">{t.settings}</h1>
-        <p className="text-slate-600">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.settings}</h1>
+        <p className="text-slate-600 dark:text-slate-400">
           {language === 'es' 
             ? 'Gestiona tu perfil, contraseña y datos de la aplicación.' 
             : 'Manage your profile, password, and application data.'}
@@ -161,25 +161,25 @@ const Settings: React.FC<SettingsProps> = ({
       {firebaseAuth.isSignedIn && (
         <>
           {/* Account Settings */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center space-x-2">
-            <User className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-slate-900">{t.accountSettings}</h2>
+            <User className="w-5 h-5 text-primary dark:text-blue-400" />
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{t.accountSettings}</h2>
           </div>
         </div>
         <div className="p-6">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               {t.email}
             </label>
             <input
               type="email"
               value={firebaseAuth.user?.email || ''}
               disabled
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed"
+              className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed"
             />
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               {language === 'es' 
                 ? 'El correo electrónico no puede modificarse.' 
                 : 'Email address cannot be changed.'}
@@ -189,24 +189,24 @@ const Settings: React.FC<SettingsProps> = ({
       </div>
 
       {/* Profile Settings */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center space-x-2">
-            <User className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-slate-900">{t.profileSettings}</h2>
+            <User className="w-5 h-5 text-primary dark:text-blue-400" />
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{t.profileSettings}</h2>
           </div>
         </div>
         <div className="p-6">
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 {t.displayName}
               </label>
               <input
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder={t.displayName}
               />
             </div>
@@ -233,7 +233,7 @@ const Settings: React.FC<SettingsProps> = ({
             <button
               type="submit"
               disabled={profileLoading}
-              className="flex items-center justify-center space-x-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center space-x-2 px-6 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
               <span>{profileLoading ? t.pleaseWait : t.updateProfileButton}</span>
@@ -243,50 +243,50 @@ const Settings: React.FC<SettingsProps> = ({
       </div>
 
       {/* Password Settings */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center space-x-2">
-            <Lock className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-slate-900">{t.updatePassword}</h2>
+            <Lock className="w-5 h-5 text-primary dark:text-blue-400" />
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{t.updatePassword}</h2>
           </div>
         </div>
         <div className="p-6">
           <form onSubmit={handleUpdatePassword} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 {t.currentPassword}
               </label>
               <input
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder={t.currentPassword}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 {t.newPassword}
               </label>
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder={t.newPassword}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 {t.confirmNewPassword}
               </label>
               <input
                 type="password"
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder={t.confirmNewPassword}
               />
             </div>
@@ -313,7 +313,7 @@ const Settings: React.FC<SettingsProps> = ({
             <button
               type="submit"
               disabled={passwordLoading}
-              className="flex items-center justify-center space-x-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center space-x-2 px-6 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Lock className="w-4 h-4" />
               <span>{passwordLoading ? t.pleaseWait : t.updatePasswordButton}</span>
@@ -325,21 +325,21 @@ const Settings: React.FC<SettingsProps> = ({
       )}
 
       {/* Data Management - Always visible */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center space-x-2">
-            <Download className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-slate-900">{t.dataManagementSettings}</h2>
+            <Download className="w-5 h-5 text-primary dark:text-blue-400" />
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{t.dataManagementSettings}</h2>
           </div>
         </div>
         <div className="p-6 space-y-6">
           {/* Export Data */}
           <div className="space-y-2">
-            <h3 className="font-medium text-slate-900">{t.exportData}</h3>
-            <p className="text-sm text-slate-600">{t.exportDescription}</p>
+            <h3 className="font-medium text-slate-900 dark:text-slate-100">{t.exportData}</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t.exportDescription}</p>
             <button
               onClick={onExport}
-              className="flex items-center space-x-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             >
               <Download className="w-4 h-4" />
               <span>{t.exportButton}</span>
@@ -347,12 +347,12 @@ const Settings: React.FC<SettingsProps> = ({
           </div>
 
           {/* Import Data */}
-          <div className="space-y-2 pt-6 border-t border-slate-200">
-            <h3 className="font-medium text-slate-900">{t.importData}</h3>
-            <p className="text-sm text-slate-600">{t.importDescription}</p>
+          <div className="space-y-2 pt-6 border-t border-slate-200 dark:border-slate-700">
+            <h3 className="font-medium text-slate-900 dark:text-slate-100">{t.importData}</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t.importDescription}</p>
             <button
               onClick={handleImportClick}
-              className="flex items-center space-x-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             >
               <Upload className="w-4 h-4" />
               <span>{t.importButton}</span>

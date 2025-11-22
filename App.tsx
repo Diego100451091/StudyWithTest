@@ -22,6 +22,7 @@ const App: React.FC = () => {
     loaded,
     showTutorial,
     language,
+    darkMode,
     firebaseAuth,
     syncing,
     lastSync,
@@ -30,6 +31,7 @@ const App: React.FC = () => {
     openTutorial,
     closeTutorial,
     toggleLanguage,
+    toggleDarkMode,
     addSubject, 
     updateSubject, 
     deleteSubject, 
@@ -84,7 +86,9 @@ const App: React.FC = () => {
         onImport={() => { /* Triggered via ref in Layout */ }}
         onOpenTutorial={openTutorial}
         onToggleLanguage={toggleLanguage}
+        onToggleDarkMode={toggleDarkMode}
         language={language}
+        darkMode={darkMode}
         firebaseAuth={firebaseAuth}
         onShowAuthModal={() => setShowAuthModal(true)}
         onSignOutFromGoogle={signOutFromGoogle}

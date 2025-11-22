@@ -56,18 +56,18 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in duration-200">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-slate-500" />
+            <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
           </button>
         </div>
 
@@ -75,23 +75,23 @@ const Modal: React.FC<ModalProps> = ({
         <div className="p-6">
           <div className="flex flex-col items-center text-center space-y-4">
             {getIcon()}
-            <p className="text-slate-700 leading-relaxed">{message}</p>
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{message}</p>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 dark:border-slate-700">
           {type === 'confirm' ? (
             <>
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
               >
                 {cancelText}
               </button>
               <button
                 onClick={handleConfirm}
-                className="px-4 py-2 bg-primary text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors"
               >
                 {confirmText}
               </button>
@@ -99,7 +99,7 @@ const Modal: React.FC<ModalProps> = ({
           ) : (
             <button
               onClick={onClose}
-              className="px-6 py-2 bg-primary text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+              className="px-6 py-2 bg-primary dark:bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors"
             >
               {confirmText}
             </button>

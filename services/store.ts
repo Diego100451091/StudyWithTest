@@ -9,6 +9,7 @@ const TUTORIAL_KEY = 'study_master_tutorial_completed';
 const LANGUAGE_KEY = 'study_master_language';
 const LAST_SYNC_KEY = 'study_master_last_sync';
 const SESSION_AUTH_KEY = 'study_master_was_authenticated';
+const DARK_MODE_KEY = 'study_master_dark_mode';
 
 // Timing constants for sync operations
 const FIREBASE_INIT_DELAY = 300;
@@ -31,6 +32,7 @@ export const useStore = () => {
   const [loaded, setLoaded] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [language, setLanguage] = useState<Language>('es');
+  const [darkMode, setDarkMode] = useState(false);
   const [firebaseAuth, setFirebaseAuth] = useState<FirebaseAuthState>({ isSignedIn: false, user: null });
   const [syncing, setSyncing] = useState(false);
   const [lastSync, setLastSync] = useState<string | null>(null);
@@ -141,6 +143,13 @@ export const useStore = () => {
       const savedLanguage = localStorage.getItem(LANGUAGE_KEY) as Language;
       if (savedLanguage && (savedLanguage === 'es' || savedLanguage === 'en')) {
         setLanguage(savedLanguage);
+      }
+
+      // Load dark mode preference
+      const savedDarkMode = localStorage.getItem(DARK_MODE_KEY);
+      if (savedDarkMode === 'true') {
+        setDarkMode(true);
+        document.documentElement.classList.add('dark');
       }
 
       // Load last sync time
@@ -557,6 +566,17 @@ export const useStore = () => {
     localStorage.setItem(LANGUAGE_KEY, newLang);
   };
 
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem(DARK_MODE_KEY, String(newDarkMode));
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
   // Firebase auth methods
   const signInWithEmail = async (email: string, password: string) => {
     try {
@@ -680,6 +700,7 @@ export const useStore = () => {
     loaded,
     showTutorial,
     language,
+    darkMode,
     firebaseAuth,
     syncing,
     lastSync,
@@ -688,6 +709,7 @@ export const useStore = () => {
     openTutorial,
     closeTutorial,
     toggleLanguage,
+    toggleDarkMode,
     addSubject,
     updateSubject,
     deleteSubject,

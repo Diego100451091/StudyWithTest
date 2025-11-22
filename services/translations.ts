@@ -239,6 +239,8 @@ export interface Translations {
   dataImported: string;
   invalidJSON: string;
   noQuestionsFound: string;
+  darkMode: string;
+  lightMode: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -481,6 +483,8 @@ export const translations: Record<Language, Translations> = {
     dataImported: 'Datos importados correctamente',
     invalidJSON: 'Error al importar datos. JSON inválido.',
     noQuestionsFound: 'No se encontraron preguntas para la selección.',
+    darkMode: 'Modo Oscuro',
+    lightMode: 'Modo Claro',
   },
   
   en: {
@@ -722,6 +726,8 @@ export const translations: Record<Language, Translations> = {
     dataImported: 'Data imported successfully',
     invalidJSON: 'Failed to import data. Invalid JSON.',
     noQuestionsFound: 'No questions found for selection.',
+    darkMode: 'Dark Mode',
+    lightMode: 'Light Mode',
   }
 };
 

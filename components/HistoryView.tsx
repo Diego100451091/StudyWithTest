@@ -50,11 +50,11 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
     return (
       <div className="max-w-4xl mx-auto">
         {/* Header del visor */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 mb-6 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">{subject?.name || t.unknownSubject}</h1>
-              <p className="text-sm text-slate-500 flex items-center mt-1">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{subject?.name || t.unknownSubject}</h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center mt-1">
                 <Calendar className="w-4 h-4 mr-1" /> {new Date(result.date).toLocaleDateString()}
                 <span className="mx-2">•</span>
                 <Target className="w-4 h-4 mr-1" /> {getTestModeTranslation(result.mode, language)}
@@ -62,24 +62,24 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
             </div>
             <button
               onClick={() => setViewingResultId(null)}
-              className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             >
               {t.backToHistory}
             </button>
           </div>
           
           <div className="flex items-center gap-6 text-sm">
-            <div className={`text-3xl font-bold ${percent >= 70 ? 'text-green-600' : 'text-amber-600'}`}>
+            <div className={`text-3xl font-bold ${percent >= 70 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
               {percent}%
             </div>
             <div className="flex gap-4">
-              <span className="flex items-center text-green-600">
+              <span className="flex items-center text-green-600 dark:text-green-400">
                 <Check className="w-4 h-4 mr-1" /> {result.score} {t.correct}
               </span>
-              <span className="flex items-center text-red-600">
+              <span className="flex items-center text-red-600 dark:text-red-400">
                 <X className="w-4 h-4 mr-1" /> {result.totalQuestions - result.score} {t.incorrect}
               </span>
-              <span className="flex items-center text-slate-500">
+              <span className="flex items-center text-slate-500 dark:text-slate-400">
                 <Clock className="w-4 h-4 mr-1" /> {Math.floor(result.timeTaken / 60)}m {result.timeTaken % 60}s
               </span>
             </div>
@@ -99,13 +99,13 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
             return (
               <div
                 key={answer.questionId}
-                className={`bg-white rounded-2xl shadow-sm border-2 ${
-                  isCorrect ? 'border-green-200' : 'border-red-200'
+                className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border-2 ${
+                  isCorrect ? 'border-green-200 dark:border-green-700' : 'border-red-200 dark:border-red-700'
                 } p-6`}
               >
                 <div className="flex gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    isCorrect ? 'bg-green-500' : 'bg-red-500'
+                    isCorrect ? 'bg-green-500 dark:bg-green-600' : 'bg-red-500 dark:bg-red-600'
                   }`}>
                     {isCorrect ? (
                       <Check className="w-5 h-5 text-white" />
@@ -115,7 +115,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
                   </div>
                   
                   <div className="flex-1">
-                    <p className="font-semibold text-slate-900 text-lg mb-4">
+                    <p className="font-semibold text-slate-900 dark:text-slate-100 text-lg mb-4">
                       {idx + 1}. {question.text}
                     </p>
 
@@ -125,11 +125,11 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
                         const isUserAnswer = opt.id === answer.selectedOptionId;
                         const isCorrectAnswer = opt.id === question.correctOptionId;
                         
-                        let optionClass = 'border-slate-200 bg-slate-50';
+                        let optionClass = 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700';
                         if (isCorrectAnswer) {
-                          optionClass = 'border-green-500 bg-green-50 ring-1 ring-green-500';
+                          optionClass = 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/30 ring-1 ring-green-500 dark:ring-green-600';
                         } else if (isUserAnswer && !isCorrect) {
-                          optionClass = 'border-red-500 bg-red-50 ring-1 ring-red-500';
+                          optionClass = 'border-red-500 dark:border-red-600 bg-red-50 dark:bg-red-900/30 ring-1 ring-red-500 dark:ring-red-600';
                         }
 
                         return (
@@ -138,13 +138,13 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
                             className={`p-3 rounded-lg border-2 ${optionClass} flex items-center`}
                           >
                             {isCorrectAnswer && (
-                              <Check className="w-4 h-4 text-green-600 mr-2 flex-shrink-0" />
+                              <Check className="w-4 h-4 text-green-600 dark:text-green-400 mr-2 flex-shrink-0" />
                             )}
                             {isUserAnswer && !isCorrect && (
-                              <X className="w-4 h-4 text-red-600 mr-2 flex-shrink-0" />
+                              <X className="w-4 h-4 text-red-600 dark:text-red-400 mr-2 flex-shrink-0" />
                             )}
                             <span className={`${
-                              isCorrectAnswer || isUserAnswer ? 'font-medium text-slate-900' : 'text-slate-600'
+                              isCorrectAnswer || isUserAnswer ? 'font-medium text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300'
                             }`}>
                               {opt.text}
                             </span>
@@ -156,15 +156,15 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
                     {/* Explicación */}
                     {question.explanation && (
                       <div className={`p-4 rounded-lg ${
-                        isCorrect ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'
+                        isCorrect ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700' : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700'
                       }`}>
                         <p className={`text-sm font-semibold mb-1 ${
-                          isCorrect ? 'text-green-900' : 'text-blue-900'
+                          isCorrect ? 'text-green-900 dark:text-green-300' : 'text-blue-900 dark:text-blue-300'
                         }`}>
                           {t.explanation}:
                         </p>
                         <p className={`text-sm ${
-                          isCorrect ? 'text-green-800' : 'text-blue-800'
+                          isCorrect ? 'text-green-800 dark:text-green-400' : 'text-blue-800 dark:text-blue-400'
                         }`}>
                           {question.explanation}
                         </p>
@@ -198,18 +198,18 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
-       <h1 className="text-3xl font-bold text-slate-900">{t.yourProgress}</h1>
+       <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{t.yourProgress}</h1>
 
        {results.length === 0 ? (
-         <div className="p-12 bg-white rounded-2xl text-center border border-slate-200">
-            <p className="text-slate-500">{t.noResultsYet}</p>
+         <div className="p-12 bg-white dark:bg-slate-800 rounded-2xl text-center border border-slate-200 dark:border-slate-700">
+            <p className="text-slate-500 dark:text-slate-400">{t.noResultsYet}</p>
          </div>
        ) : (
          <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Performance Trend */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 className="text-lg font-bold mb-4 text-slate-700">{t.recentScoresTrend}</h3>
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                    <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-slate-100">{t.recentScoresTrend}</h3>
                     <div style={{ width: '100%', height: '256px' }}>
                         <ResponsiveContainer>
                             <LineChart data={chartData}>
@@ -226,8 +226,8 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
                 </div>
 
                 {/* Subject Breakdown */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 className="text-lg font-bold mb-4 text-slate-700">{t.avgScoreBySubject}</h3>
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+                    <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-slate-100">{t.avgScoreBySubject}</h3>
                     <div style={{ width: '100%', height: '256px' }}>
                          <ResponsiveContainer>
                             <BarChart data={subjectStats} layout="vertical">
@@ -247,23 +247,23 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
             </div>
 
             {/* Recent History List */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100">
-                    <h3 className="font-bold text-slate-800">{t.recentActivity}</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100">{t.recentActivity}</h3>
                 </div>
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 dark:divide-slate-700">
                     {results.slice().reverse().map(result => {
                         const subject = data.subjects.find(s => s.id === result.subjectId);
                         const percent = Math.round((result.score / result.totalQuestions) * 100);
                         const failedCount = result.answers?.filter(a => !a.isCorrect).length || 0;
                         
                         return (
-                            <div key={result.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                            <div key={result.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
                                 <div className="flex items-center space-x-4 flex-1">
                                     <div className={`w-2 h-10 rounded-full`} style={{backgroundColor: subject?.color || '#cbd5e1'}}></div>
                                     <div className="flex-1">
-                                        <p className="font-semibold text-slate-900">{subject?.name || t.unknownSubject}</p>
-                                        <p className="text-xs text-slate-500 flex items-center">
+                                        <p className="font-semibold text-slate-900 dark:text-slate-100">{subject?.name || t.unknownSubject}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center">
                                             <Calendar className="w-3 h-3 mr-1" /> {new Date(result.date).toLocaleDateString()}
                                             <span className="mx-2">•</span>
                                             <Target className="w-3 h-3 mr-1" /> {getTestModeTranslation(result.mode, language)}
@@ -286,14 +286,14 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
                                     </div>
                                     <button
                                         onClick={() => toggleViewer(result.id)}
-                                        className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-all"
+                                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
                                         title={t.viewTest}
                                     >
                                         <Eye className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(result.id)}
-                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
                                         title={t.deleteResult}
                                     >
                                         <Trash2 className="w-4 h-4" />
