@@ -119,7 +119,7 @@ export interface Translations {
   avgScoreBySubject: string;
   recentActivity: string;
   unknownSubject: string;
-  mode: string;
+  testMode: string;
   results: string;
   
   // Tutorial
@@ -320,7 +320,7 @@ export const translations: Record<Language, Translations> = {
     avgScoreBySubject: 'Puntuación Media por Asignatura',
     recentActivity: 'Actividad Reciente',
     unknownSubject: 'Asignatura Desconocida',
-    mode: 'Modo',
+    testMode: 'Modo',
     results: 'Resultados',
     
     // Tutorial
@@ -520,7 +520,7 @@ export const translations: Record<Language, Translations> = {
     avgScoreBySubject: 'Average Score by Subject',
     recentActivity: 'Recent Activity',
     unknownSubject: 'Unknown Subject',
-    mode: 'Mode',
+    testMode: 'Mode',
     results: 'Results',
     
     // Tutorial

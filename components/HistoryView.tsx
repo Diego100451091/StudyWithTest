@@ -97,7 +97,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language }) => {
                                         <p className="text-xs text-slate-500 flex items-center">
                                             <Calendar className="w-3 h-3 mr-1" /> {new Date(result.date).toLocaleDateString()}
                                             <span className="mx-2">•</span>
-                                            <Target className="w-3 h-3 mr-1" /> {result.mode} {t.mode}
+                                            <Target className="w-3 h-3 mr-1" /> {result.mode} {t.testMode}
                                         </p>
                                     </div>
                                 </div>
