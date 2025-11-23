@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
-import { UserData, TestResult, TestMode } from '../types';
-import { Language, getTranslation, getTestModeTranslation } from '../services/translations';
+import { UserData, TestResult, TestMode } from '../../types';
+import { Language, getTranslation, getTestModeTranslation } from '../../services/translations';
 import { Calendar, Target, Clock, Trash2, Eye, X, Check, ArrowLeft } from 'lucide-react';
-import Modal from './Modal';
-import { useModal } from '../hooks/useModal';
+import { Modal } from '../common';
+import { useModal } from '../../hooks';
 
 interface HistoryViewProps {
   data: UserData;

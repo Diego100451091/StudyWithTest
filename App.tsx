@@ -1,20 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout';
-import Dashboard from './components/Dashboard';
-import SubjectDetail from './components/SubjectDetail';
-import TestRunner from './components/TestRunner';
-import AITools from './components/AITools';
-import HistoryView from './components/HistoryView';
-import Settings from './components/Settings';
-import Tutorial from './components/Tutorial';
-import { DataConflictModal } from './components/DataConflictModal';
-import { AuthModal } from './components/AuthModal';
-import Logo from './components/Logo';
-import { useStore } from './services/store';
-import { getTranslation } from './services/translations';
-import Modal from './components/Modal';
-import { useModal } from './hooks/useModal';
+import { Layout, Logo, Modal } from './src/components/common';
+import { Dashboard, SubjectDetail, TestRunner } from './src/pages';
+import { AITools, HistoryView, Settings, Tutorial, DataConflictModal, AuthModal } from './src/components/features';
+import { useStore } from './src/services/store';
+import { getTranslation } from './src/services/translations';
+import { useModal } from './src/hooks';
 
 const App: React.FC = () => {
   const { 

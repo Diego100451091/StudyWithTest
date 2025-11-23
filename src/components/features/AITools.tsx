@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Copy, Check, FileJson, ArrowRight, AlertCircle } from 'lucide-react';
-import { UserData, Subject, Test, Question } from '../types';
-import { Language, getTranslation } from '../services/translations';
-import Modal from './Modal';
-import { useModal } from '../hooks/useModal';
+import { UserData, Subject, Test, Question } from '../../types';
+import { Language, getTranslation } from '../../services/translations';
+import { Modal } from '../common';
+import { useModal } from '../../hooks';
 
 interface AIToolsProps {
   subjects: Subject[];

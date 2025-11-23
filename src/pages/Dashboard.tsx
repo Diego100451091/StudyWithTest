@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, MoreVertical, Edit2, Trash2, Book, ArrowRight, AlertCircle } from 'lucide-react';
-import { Subject, COLORS, UserData, Test } from '../types';
+import { Subject, UserData, Test } from '../types';
+import { SUBJECT_COLORS } from '../constants';
 import { Language, getTranslation } from '../services/translations';
-import Modal from './Modal';
-import { useModal } from '../hooks/useModal';
+import { Modal } from '../components/common';
+import { useModal } from '../hooks';
 
 interface DashboardProps {
   data: UserData;
@@ -17,13 +18,13 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ data, language, onAddSubject, onUpdateSubject, onDeleteSubject }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
-  const [formData, setFormData] = useState<Partial<Subject>>({ name: '', description: '', color: COLORS[0] });
+  const [formData, setFormData] = useState<Partial<Subject>>({ name: '', description: '', color: SUBJECT_COLORS[0] });
   const t = getTranslation(language);
   const { modalState, showConfirm, closeModal } = useModal();
 
   const openCreate = () => {
     setEditingSubject(null);
-    setFormData({ name: '', description: '', color: COLORS[0] });
+    setFormData({ name: '', description: '', color: SUBJECT_COLORS[0] });
     setIsModalOpen(true);
   };
 
@@ -53,7 +54,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, language, onAddSubject, onU
       id: editingSubject ? editingSubject.id : crypto.randomUUID(),
       name: formData.name,
       description: formData.description || '',
-      color: formData.color || COLORS[0]
+      color: formData.color || SUBJECT_COLORS[0]
     };
 
     if (editingSubject) {
@@ -191,7 +192,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, language, onAddSubject, onU
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.colorTag}</label>
                 <div className="flex flex-wrap gap-2">
-                  {COLORS.map(c => (
+                  {SUBJECT_COLORS.map(c => (
                     <button
                       key={c}
                       type="button"

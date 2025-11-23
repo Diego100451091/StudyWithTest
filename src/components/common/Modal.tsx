@@ -1,9 +1,8 @@
 import React from 'react';
 import { X, AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react';
+import { ModalType } from '../../types/modal';
 
-export type ModalType = 'info' | 'success' | 'warning' | 'error' | 'confirm';
-
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm?: () => void;
@@ -14,7 +13,10 @@ interface ModalProps {
   cancelText?: string;
 }
 
-const Modal: React.FC<ModalProps> = ({
+/**
+ * Reusable modal component with different types (info, success, warning, error, confirm)
+ */
+export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
@@ -60,7 +62,6 @@ const Modal: React.FC<ModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in duration-200">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{title}</h2>
           <button
@@ -71,7 +72,6 @@ const Modal: React.FC<ModalProps> = ({
           </button>
         </div>
 
-        {/* Body */}
         <div className="p-6">
           <div className="flex flex-col items-center text-center space-y-4">
             {getIcon()}
@@ -79,7 +79,6 @@ const Modal: React.FC<ModalProps> = ({
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 dark:border-slate-700">
           {type === 'confirm' ? (
             <>
@@ -109,5 +108,3 @@ const Modal: React.FC<ModalProps> = ({
     </div>
   );
 };
-
-export default Modal;

@@ -1,3 +1,7 @@
+/**
+ * Core domain types for the StudyWithTest application
+ */
+
 export interface Option {
   id: string;
   text: string;
@@ -56,21 +60,6 @@ export interface UserData {
   subjects: Subject[];
   tests: Test[];
   results: TestResult[];
-  failedQuestionIds: string[]; // Set of IDs
-  bookmarkedQuestionIds: string[]; // Set of IDs
+  failedQuestionIds: string[];
+  bookmarkedQuestionIds: string[];
 }
-
-export const COLORS = [
-  '#ef4444', // Red
-  '#f97316', // Orange
-  '#f59e0b', // Amber
-  '#84cc16', // Lime
-  '#10b981', // Emerald
-  '#06b6d4', // Cyan
-  '#3b82f6', // Blue
-  '#6366f1', // Indigo
-  '#8b5cf6', // Violet
-  '#d946ef', // Fuchsia
-  '#f43f5e', // Rose
-  '#64748b', // Slate
-];

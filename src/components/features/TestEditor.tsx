@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Save, GripVertical, AlertCircle } from 'lucide-react';
-import { Test, Question, Option } from '../types';
-import { Language, getTranslation } from '../services/translations';
+import { Test, Question, Option } from '../../types';
+import { Language, getTranslation } from '../../services/translations';
 
 interface TestEditorProps {
   test: Test;

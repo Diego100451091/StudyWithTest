@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertCircle, Database, Cloud } from 'lucide-react';
-import { UserData } from '../types';
-import { Language, getTranslation } from '../services/translations';
+import { UserData } from '../../types';
+import { Language, getTranslation } from '../../services/translations';
 
 interface DataConflictModalProps {
   localData: UserData;

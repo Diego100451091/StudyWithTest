@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { firebaseService } from '../services/firebase';
+import { firebaseService } from '../../services/firebase';
 
 interface LogEntry {
   timestamp: string;

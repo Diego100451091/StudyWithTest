@@ -1,23 +1,24 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { UserData, Subject, Test, TestResult, Question } from '../types';
+import { STORAGE_KEYS, TIMING } from '../constants';
 import { Language } from './translations';
 import { firebaseService, FirebaseAuthState } from './firebase';
 
-// Storage keys
-const STORAGE_KEY = 'study_master_data_v1';
-const TUTORIAL_KEY = 'study_master_tutorial_completed';
-const LANGUAGE_KEY = 'study_master_language';
-const LAST_SYNC_KEY = 'study_master_last_sync';
-const SESSION_AUTH_KEY = 'study_master_was_authenticated';
-const DARK_MODE_KEY = 'study_master_dark_mode';
+// Storage keys from constants
+const STORAGE_KEY = STORAGE_KEYS.DATA;
+const TUTORIAL_KEY = STORAGE_KEYS.TUTORIAL;
+const LANGUAGE_KEY = STORAGE_KEYS.LANGUAGE;
+const LAST_SYNC_KEY = STORAGE_KEYS.LAST_SYNC;
+const SESSION_AUTH_KEY = STORAGE_KEYS.SESSION_AUTH;
+const DARK_MODE_KEY = STORAGE_KEYS.DARK_MODE;
 
-// Timing constants for sync operations
-const FIREBASE_INIT_DELAY = 300;
-const FIREBASE_RETRY_DELAY = 500;
-const PERMISSION_RETRY_DELAY = 1000;
-const LOGOUT_COMPLETION_DELAY = 500;
-const SYNC_DEBOUNCE_DELAY = 500;
-const DATA_COMPLETION_DELAY = 100;
+// Timing constants from constants
+const FIREBASE_INIT_DELAY = TIMING.FIREBASE_INIT_DELAY;
+const FIREBASE_RETRY_DELAY = TIMING.FIREBASE_RETRY_DELAY;
+const PERMISSION_RETRY_DELAY = TIMING.PERMISSION_RETRY_DELAY;
+const LOGOUT_COMPLETION_DELAY = TIMING.LOGOUT_COMPLETION_DELAY;
+const SYNC_DEBOUNCE_DELAY = TIMING.SYNC_DEBOUNCE_DELAY;
+const DATA_COMPLETION_DELAY = TIMING.DATA_COMPLETION_DELAY;
 
 const INITIAL_DATA: UserData = {
   subjects: [],

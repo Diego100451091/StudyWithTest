@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Lock, Download, Upload, Save, AlertCircle, CheckCircle } from 'lucide-react';
-import { Language, getTranslation } from '../services/translations';
-import { firebaseService } from '../services/firebase';
+import { Language, getTranslation } from '../../services/translations';
+import { firebaseService } from '../../services/firebase';
 
 interface SettingsProps {
   language: Language;

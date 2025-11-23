@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { X, ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { Language, getTranslation } from '../services/translations';
+import { Language, getTranslation } from '../../services/translations';
 
 interface TutorialStep {
   title: string;

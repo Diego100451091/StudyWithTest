@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, X } from 'lucide-react';
-import { Language, getTranslation } from '../services/translations';
+import { Language, getTranslation } from '../../services/translations';
 
 interface AuthModalProps {
   language: Language;

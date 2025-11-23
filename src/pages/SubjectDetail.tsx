@@ -3,9 +3,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Play, Trash2, Clock, HelpCircle, CheckCircle2, AlertTriangle, MoreHorizontal, Edit, ListChecks, RotateCcw, MoreVertical } from 'lucide-react';
 import { UserData, Test, Subject, TestMode } from '../types';
 import { Language, getTranslation } from '../services/translations';
-import TestEditor from './TestEditor';
-import Modal from './Modal';
-import { useModal } from '../hooks/useModal';
+import { buildTestRunQuery, calculateSubjectStats, getFailedQuestionsForSubject, getBookmarkedQuestionsForSubject } from '../utils';
+import TestEditor from '../components/features/TestEditor';
+import { Modal } from '../components/common';
+import { useModal } from '../hooks';
 
 interface SubjectDetailProps {
   data: UserData;
@@ -33,22 +34,21 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
   const subject = data.subjects.find(s => s.id === id);
   const tests = data.tests.filter(t => t.subjectId === id);
 
-  // Calculate stats
-  const subjectResults = data.results.filter(r => r.subjectId === id);
-  const totalAttempts = subjectResults.length;
-  const avgScore = totalAttempts > 0 
-    ? Math.round(subjectResults.reduce((acc, curr) => acc + (curr.score / curr.totalQuestions * 100), 0) / totalAttempts)
-    : 0;
+  // Calculate stats using utility functions
+  const { totalAttempts, averageScore: avgScore } = useMemo(
+    () => calculateSubjectStats(id!, data.results),
+    [id, data.results]
+  );
   
-  const failedIdsInSubject = useMemo(() => {
-     const subjectQIds = new Set(tests.flatMap(t => t.questions.map(q => q.id)));
-     return data.failedQuestionIds.filter(fid => subjectQIds.has(fid));
-  }, [tests, data.failedQuestionIds]);
+  const failedIdsInSubject = useMemo(
+    () => getFailedQuestionsForSubject(id!, tests, data.failedQuestionIds),
+    [id, tests, data.failedQuestionIds]
+  );
 
-  const bookmarkedIdsInSubject = useMemo(() => {
-    const subjectQIds = new Set(tests.flatMap(t => t.questions.map(q => q.id)));
-    return data.bookmarkedQuestionIds.filter(bid => subjectQIds.has(bid));
- }, [tests, data.bookmarkedQuestionIds]);
+  const bookmarkedIdsInSubject = useMemo(
+    () => getBookmarkedQuestionsForSubject(id!, tests, data.bookmarkedQuestionIds),
+    [id, tests, data.bookmarkedQuestionIds]
+  );
 
 
   if (!subject) return <div>Subject not found</div>;
@@ -60,34 +60,27 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
     setSelectedTests(next);
   };
 
-  const buildRunUrl = (baseParams: string) => {
-    const params = new URLSearchParams(baseParams);
-    if (shuffleQuestions) params.set('shuffleQ', '1');
-    if (shuffleAnswers) params.set('shuffleA', '1');
-    return params.toString();
-  };
-
   const handleRunTests = (mode: TestMode) => {
     if (selectedTests.size === 0) return;
     const idList = Array.from(selectedTests).join(',');
-    const query = buildRunUrl(`tests=${idList}&mode=${mode}`);
+    const query = buildTestRunQuery(`tests=${idList}&mode=${mode}`, shuffleQuestions, shuffleAnswers);
     navigate(`/run/${id}?${query}`);
   };
 
   const handleRunAll = (mode: TestMode) => {
     const idList = tests.map(t => t.id).join(',');
     if(!idList) return;
-    const query = buildRunUrl(`tests=${idList}&mode=${mode}`);
+    const query = buildTestRunQuery(`tests=${idList}&mode=${mode}`, shuffleQuestions, shuffleAnswers);
     navigate(`/run/${id}?${query}`);
   };
   
   const handleRunFailed = (mode: TestMode) => {
-    const query = buildRunUrl(`type=failed&mode=${mode}`);
+    const query = buildTestRunQuery(`type=failed&mode=${mode}`, shuffleQuestions, shuffleAnswers);
     navigate(`/run/${id}?${query}`);
   };
 
   const handleRunBookmarked = (mode: TestMode) => {
-    const query = buildRunUrl(`type=bookmarked&mode=${mode}`);
+    const query = buildTestRunQuery(`type=bookmarked&mode=${mode}`, shuffleQuestions, shuffleAnswers);
     navigate(`/run/${id}?${query}`);
   };
 

@@ -3,8 +3,9 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Flag, Check, X, Clock, RotateCcw, Save, CheckCircle2 } from 'lucide-react';
 import { UserData, Test, Question, QuestionResult, TestMode, TestResult } from '../types';
 import { Language, getTranslation } from '../services/translations';
-import Modal from './Modal';
-import { useModal } from '../hooks/useModal';
+import { shuffleArray, parseTestQuery, buildTestRunQuery, getQuestionsByType, formatTime } from '../utils';
+import { Modal } from '../components/common';
+import { useModal, useTimer } from '../hooks';
 
 interface TestRunnerProps {
   data: UserData;

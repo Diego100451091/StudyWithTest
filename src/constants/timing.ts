@@ -1,0 +1,11 @@
+/**
+ * Timing constants for async operations and UI delays
+ */
+export const TIMING = {
+  FIREBASE_INIT_DELAY: 300,
+  FIREBASE_RETRY_DELAY: 500,
+  PERMISSION_RETRY_DELAY: 1000,
+  LOGOUT_COMPLETION_DELAY: 500,
+  SYNC_DEBOUNCE_DELAY: 500,
+  DATA_COMPLETION_DELAY: 100,
+} as const;

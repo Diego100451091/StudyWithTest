@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BookOpen, Menu, X, Home, History, Wand2, Settings as SettingsIcon, HelpCircle, Languages, Cloud, LogOut, RefreshCw, AlertCircle, Moon, Sun } from 'lucide-react';
-import { Language, getTranslation } from '../services/translations';
-import { FirebaseAuthState, firebaseService } from '../services/firebase';
+import { Language, getTranslation } from '../../services/translations';
+import { FirebaseAuthState, firebaseService } from '../../services/firebase';
 import Logo from './Logo';
 
 interface LayoutProps {

@@ -1,7 +1,10 @@
 import { useState, useCallback } from 'react';
-import { ModalType } from '../components/Modal';
+import { ModalType } from '../types/modal';
 
-interface ModalState {
+/**
+ * Modal state management interface
+ */
+export interface ModalState {
   isOpen: boolean;
   title: string;
   message: string;
@@ -11,6 +14,10 @@ interface ModalState {
   onConfirm?: () => void;
 }
 
+/**
+ * Hook for managing modal state and displaying different types of modals
+ * @returns Object with modal state and helper functions
+ */
 export const useModal = () => {
   const [modalState, setModalState] = useState<ModalState>({
     isOpen: false,
