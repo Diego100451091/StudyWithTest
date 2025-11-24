@@ -50,6 +50,7 @@ export interface Translations {
   runOnlyThis: string;
   editTest: string;
   deleteTest: string;
+  duplicateTest: string;
   noTestsYet: string;
   generateWithAI: string;
   createTestManually: string;
@@ -307,6 +308,7 @@ export const translations: Record<Language, Translations> = {
     runOnlyThis: 'Ejecutar solo este test',
     editTest: 'Editar test',
     deleteTest: 'Eliminar este test',
+    duplicateTest: 'Duplicar test',
     noTestsYet: 'Aún no hay tests en esta asignatura.',
     generateWithAI: 'Genera uno con IA',
     createTestManually: 'Crear Test Manualmente',
@@ -410,9 +412,9 @@ export const translations: Record<Language, Translations> = {
     viewSubjectDetail: 'Ver Detalle de Asignatura',
     viewSubjectDescription: 'Si ya tienes asignaturas creadas, haz clic en cualquier tarjeta para ver sus detalles. Aquí podrás gestionar todos los tests relacionados con esa asignatura.',
     aiToolsTitle: 'Herramientas de IA',
-    aiToolsDescription: 'En la sección "Herramientas IA" puedes generar tests automáticamente a partir de documentos PDF, textos o apuntes usando inteligencia artificial. Es la forma más rápida de crear contenido.',
+    aiToolsDescription: 'En la sección "Herramientas IA" puedes obtener un prompt optimizado para generar o extraer tests. Copia el prompt y úsalo con tu IA favorita (ChatGPT, Claude, etc.).',
     importTestsAI: 'Importar Tests con IA',
-    importTestsDescription: 'Aquí puedes pegar texto, subir PDFs o usar tu API de OpenAI para generar preguntas automáticamente. Una vez generadas, puedes seleccionar la asignatura destino y guardar el test.',
+    importTestsDescription: 'Configura las opciones del test (modo generar/extraer, cantidad de preguntas, dificultad, etc.), copia el prompt generado y úsalo en tu IA. Luego pega el JSON resultante, selecciona la asignatura destino y guarda el test.',
     historyStatsTitle: 'Historial y Estadísticas',
     historyStatsDescription: 'En esta sección puedes ver todo tu progreso: tests realizados, puntuaciones a lo largo del tiempo, tendencias de mejora y preguntas que necesitas repasar.',
     yourResultsTitle: 'Tus Resultados',
@@ -563,6 +565,7 @@ export const translations: Record<Language, Translations> = {
     runOnlyThis: 'Run only this test',
     editTest: 'Edit test',
     deleteTest: 'Delete this test',
+    duplicateTest: 'Duplicate test',
     noTestsYet: 'No tests in this subject yet.',
     generateWithAI: 'Generate one with AI',
     createTestManually: 'Create Test Manually',
@@ -666,9 +669,9 @@ export const translations: Record<Language, Translations> = {
     viewSubjectDetail: 'View Subject Detail',
     viewSubjectDescription: 'If you already have subjects created, click on any card to view its details. Here you can manage all tests related to that subject.',
     aiToolsTitle: 'AI Tools',
-    aiToolsDescription: 'In the "AI Tools" section you can automatically generate tests from PDF documents, texts, or notes using artificial intelligence. It\'s the fastest way to create content.',
+    aiToolsDescription: 'In the "AI Tools" section you can get an optimized prompt to generate or extract tests. Copy the prompt and use it with your favorite AI (ChatGPT, Claude, etc.).',
     importTestsAI: 'Import Tests with AI',
-    importTestsDescription: 'Here you can paste text, upload PDFs, or use your OpenAI API to automatically generate questions. Once generated, you can select the target subject and save the test.',
+    importTestsDescription: 'Configure the test options (generate/extract mode, number of questions, difficulty, etc.), copy the generated prompt and use it in your AI. Then paste the resulting JSON, select the target subject and save the test.',
     historyStatsTitle: 'History and Statistics',
     historyStatsDescription: 'In this section you can see all your progress: tests taken, scores over time, improvement trends, and questions you need to review.',
     yourResultsTitle: 'Your Results',

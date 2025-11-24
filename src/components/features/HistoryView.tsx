@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
 import { UserData, TestResult, TestMode } from '../../types';
 import { Language, getTranslation, getTestModeTranslation } from '../../services/translations';
-import { Calendar, Target, Clock, Trash2, Eye, X, Check, ArrowLeft } from 'lucide-react';
+import { Calendar, Target, Clock, Trash2, Eye, X, Check, ArrowLeft, RotateCcw, Flag, MoreVertical } from 'lucide-react';
 import { Modal } from '../common';
 import { useModal } from '../../hooks';
 
@@ -18,7 +19,10 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
     .filter(r => r.mode !== TestMode.READING)
     .sort((a, b) => a.date - b.date);
   const t = getTranslation(language);
+  const navigate = useNavigate();
   const [viewingResultId, setViewingResultId] = useState<string | null>(null);
+  const [openResultMenu, setOpenResultMenu] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<'top' | 'bottom'>('bottom');
   const { modalState, showConfirm, closeModal } = useModal();
 
   const handleDelete = (id: string) => {
@@ -33,6 +37,44 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
 
   const toggleViewer = (id: string) => {
     setViewingResultId(viewingResultId === id ? null : id);
+  };
+
+  const isTestAvailable = (result: TestResult): boolean => {
+    // Si es un test especial (failed, bookmarked, specific), verificar que las preguntas existan
+    if (result.testType && result.questionIds && result.questionIds.length > 0) {
+      const allQuestions = data.tests.flatMap(t => t.questions);
+      return result.questionIds.some(qid => allQuestions.find(q => q.id === qid));
+    }
+    
+    // Test normal, verificar que los tests existan
+    if (result.testIds && result.testIds.length > 0) {
+      return result.testIds.some(testId => data.tests.find(t => t.id === testId));
+    }
+    
+    return false;
+  };
+
+  const repeatTest = (result: TestResult) => {
+    const mode = result.mode;
+    let url = `/run/${result.subjectId}?mode=${mode}`;
+    
+    // Si es un test especial (failed, bookmarked, specific), usar el tipo y las preguntas
+    if (result.testType && result.questionIds && result.questionIds.length > 0) {
+      if (result.testType === 'specific') {
+        const qids = result.questionIds.join(',');
+        url += `&type=specific&qids=${qids}`;
+      } else {
+        // Para 'failed' o 'bookmarked', usamos 'specific' con las mismas preguntas
+        const qids = result.questionIds.join(',');
+        url += `&type=specific&qids=${qids}`;
+      }
+    } else {
+      // Test normal con testIds
+      const testIds = result.testIds.join(',');
+      url += `&tests=${testIds}`;
+    }
+    
+    navigate(url);
   };
 
   // Si estamos viendo un resultado, mostrar el visor
@@ -59,13 +101,47 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
           </button>
           <div className="flex items-center space-x-4">
             <div className={`w-4 h-12 rounded-r-lg`} style={{backgroundColor: subject?.color || '#cbd5e1'}}></div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{subject?.name || t.unknownSubject}</h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center mt-1">
                 <Calendar className="w-4 h-4 mr-1" /> {new Date(result.date).toLocaleDateString()}
                 <span className="mx-2">•</span>
                 <Target className="w-4 h-4 mr-1" /> {getTestModeTranslation(result.mode, language)}
               </p>
+              {/* Mostrar título del test o tipo especial */}
+              <div className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-2">
+                {result.testType === 'failed' ? (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                    <X className="w-3 h-3 mr-1" /> {t.failedQuestions}
+                  </span>
+                ) : result.testType === 'bookmarked' ? (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                    <Flag className="w-3 h-3 mr-1" /> {t.bookmarked}
+                  </span>
+                ) : result.testType === 'specific' ? (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400">
+                    {t.questions} {language === 'es' ? 'Específicas' : 'Specific'}
+                  </span>
+                ) : result.testIds.length > 1 ? (
+                  <div>
+                    <span className="text-slate-600 dark:text-slate-400 block mb-2">
+                      {result.testIds.length} {t.tests.toLowerCase()} {language === 'es' ? 'combinados' : 'combined'}:
+                    </span>
+                    <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 dark:text-slate-400">
+                      {result.testIds.map(testId => {
+                        const test = data.tests.find(t => t.id === testId);
+                        return test ? (
+                          <li key={testId}>{test.title}</li>
+                        ) : null;
+                      })}
+                    </ul>
+                  </div>
+                ) : result.testIds.length === 1 ? (
+                  <span className="text-slate-600 dark:text-slate-400">
+                    {data.tests.find(test => test.id === result.testIds[0])?.title || t.tests}
+                  </span>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
@@ -90,6 +166,18 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
           </div>
          
         </div>
+
+        {/* Botón para repetir test */}
+        {isTestAvailable(result) && (
+          <div className="mb-6 flex justify-center">
+            <button
+              onClick={() => repeatTest(result)}
+              className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors flex items-center shadow-md shadow-blue-200 dark:shadow-blue-900/30"
+            >
+              <RotateCcw className="w-5 h-5 mr-2" /> {t.retryTest}
+            </button>
+          </div>
+        )}
 
         {/* Lista de preguntas */}
         <div className="space-y-4">
@@ -252,15 +340,16 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
             </div>
 
             {/* Recent History List */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-visible">
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700">
                     <h3 className="font-bold text-slate-900 dark:text-slate-100">{t.recentActivity}</h3>
                 </div>
-                <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                <div className="divide-y divide-slate-100 dark:divide-slate-700 overflow-hidden">
                     {results.slice().reverse().map(result => {
                         const subject = data.subjects.find(s => s.id === result.subjectId);
                         const percent = Math.round((result.score / result.totalQuestions) * 100);
                         const failedCount = result.answers?.filter(a => !a.isCorrect).length || 0;
+                        const canRepeat = isTestAvailable(result);
                         
                         return (
                             <div key={result.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group">
@@ -289,20 +378,99 @@ const HistoryView: React.FC<HistoryViewProps> = ({ data, language, onDeleteResul
                                         </span>
                                         <p className="text-xs text-slate-400">{result.score}/{result.totalQuestions}</p>
                                     </div>
-                                    <button
-                                        onClick={() => toggleViewer(result.id)}
-                                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
-                                        title={t.viewTest}
-                                    >
-                                        <Eye className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(result.id)}
-                                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
-                                        title={t.deleteResult}
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    
+                                    {/* Botones en desktop */}
+                                    <div className="hidden md:flex items-center space-x-2">
+                                        {canRepeat && (
+                                            <button
+                                                onClick={() => repeatTest(result)}
+                                                className="p-2 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
+                                                title={t.retryTest}
+                                            >
+                                                <RotateCcw className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => toggleViewer(result.id)}
+                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
+                                            title={t.viewTest}
+                                        >
+                                            <Eye className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(result.id)}
+                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
+                                            title={t.deleteResult}
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    {/* Menú móvil (tres puntos) */}
+                                    <div className="md:hidden relative">
+                                        <button
+                                            onClick={(e) => {
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                const spaceBelow = window.innerHeight - rect.bottom;
+                                                const spaceAbove = rect.top;
+                                                // Si hay menos de 200px abajo, mostrar arriba
+                                                if (spaceBelow < 200 && spaceAbove > spaceBelow) {
+                                                    setMenuPosition('top');
+                                                } else {
+                                                    setMenuPosition('bottom');
+                                                }
+                                                setOpenResultMenu(openResultMenu === result.id ? null : result.id);
+                                            }}
+                                            className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                        >
+                                            <MoreVertical className="w-5 h-5" />
+                                        </button>
+                                        
+                                        {openResultMenu === result.id && (
+                                            <>
+                                                <div 
+                                                    className="fixed inset-0 z-40" 
+                                                    onClick={() => setOpenResultMenu(null)}
+                                                />
+                                                <div className={`absolute right-0 z-50 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[180px] ${
+                                                    menuPosition === 'top' ? 'bottom-10' : 'top-10'
+                                                }`}>
+                                                    {canRepeat && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenResultMenu(null);
+                                                                repeatTest(result);
+                                                            }}
+                                                            className="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3"
+                                                        >
+                                                            <RotateCcw className="w-4 h-4 text-primary dark:text-blue-400" />
+                                                            {t.retryTest}
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => {
+                                                            setOpenResultMenu(null);
+                                                            toggleViewer(result.id);
+                                                        }}
+                                                        className="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3"
+                                                    >
+                                                        <Eye className="w-4 h-4 text-primary dark:text-blue-400" />
+                                                        {t.viewTest}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setOpenResultMenu(null);
+                                                            handleDelete(result.id);
+                                                        }}
+                                                        className="w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                        {t.deleteResult}
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         );

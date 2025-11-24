@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Copy, Check, FileJson, ArrowRight, AlertCircle } from 'lucide-react';
+import { Copy, Check, FileJson, ArrowRight, AlertCircle, ChevronDown } from 'lucide-react';
 import { UserData, Subject, Test, Question } from '../../types';
 import { Language, getTranslation } from '../../services/translations';
-import { Modal } from '../common';
+import { Modal, ToggleSwitch } from '../common';
 import { useModal } from '../../hooks';
 
 interface AIToolsProps {
@@ -202,14 +202,17 @@ Be accurate and preserve the original content as much as possible.`;
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.mode}</label>
-                   <select 
-                      value={config.testMode}
-                      onChange={e => setConfig({...config, testMode: e.target.value as 'generate' | 'extract'})}
-                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-                   >
-                      <option value="generate">{t.generateMode}</option>
-                      <option value="extract">{t.extractMode}</option>
-                   </select>
+                   <div className="relative">
+                     <select 
+                        value={config.testMode}
+                        onChange={e => setConfig({...config, testMode: e.target.value as 'generate' | 'extract'})}
+                        className="w-full h-[42px] px-4 pr-10 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 appearance-none cursor-pointer"
+                     >
+                        <option value="generate">{t.generateMode}</option>
+                        <option value="extract">{t.extractMode}</option>
+                     </select>
+                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                   </div>
                 </div>
                 <div>
                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.topicContext}</label>
@@ -221,42 +224,48 @@ Be accurate and preserve the original content as much as possible.`;
                         ? (language === 'es' ? 'ej. Capítulo 3 del Libro de Historia' : 'e.g. Chapter 3 of History Book')
                         : (language === 'es' ? 'ej. Solo preguntas sobre la Guerra Civil' : 'e.g. Only questions about the Civil War')
                       }
-                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                      className="w-full h-[42px] px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                    />
                 </div>
                 <div>
                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.testLanguage}</label>
-                   <select 
-                      value={config.language}
-                      onChange={e => setConfig({...config, language: e.target.value})}
-                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-                   >
-                      <option>English</option>
-                      <option>Spanish</option>
-                      <option>French</option>
-                      <option>German</option>
-                      <option>Italian</option>
-                      <option>Portuguese</option>
-                      <option>Chinese</option>
-                      <option>Japanese</option>
-                      <option>Korean</option>
-                      <option>Russian</option>
-                      <option>Arabic</option>
-                   </select>
+                   <div className="relative">
+                     <select 
+                        value={config.language}
+                        onChange={e => setConfig({...config, language: e.target.value})}
+                        className="w-full h-[42px] px-4 pr-10 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 appearance-none cursor-pointer"
+                     >
+                        <option>English</option>
+                        <option>Spanish</option>
+                        <option>French</option>
+                        <option>German</option>
+                        <option>Italian</option>
+                        <option>Portuguese</option>
+                        <option>Chinese</option>
+                        <option>Japanese</option>
+                        <option>Korean</option>
+                        <option>Russian</option>
+                        <option>Arabic</option>
+                     </select>
+                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                   </div>
                 </div>
                 {config.testMode === 'generate' && (
                   <div>
                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.difficulty}</label>
-                     <select 
-                        value={config.difficulty}
-                        onChange={e => setConfig({...config, difficulty: e.target.value})}
-                        className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-                     >
-                        <option>{t.easy}</option>
-                        <option>{t.intermediate}</option>
-                        <option>{t.hard}</option>
-                        <option>{t.expert}</option>
-                     </select>
+                     <div className="relative">
+                       <select 
+                          value={config.difficulty}
+                          onChange={e => setConfig({...config, difficulty: e.target.value})}
+                          className="w-full h-[42px] px-4 pr-10 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 appearance-none cursor-pointer"
+                       >
+                          <option>{t.easy}</option>
+                          <option>{t.intermediate}</option>
+                          <option>{t.hard}</option>
+                          <option>{t.expert}</option>
+                       </select>
+                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                     </div>
                   </div>
                 )}
                 <div>
@@ -268,34 +277,33 @@ Be accurate and preserve the original content as much as possible.`;
                         value={config.numQuestions}
                         onChange={e => setConfig({...config, numQuestions: parseInt(e.target.value), allQuestions: false})}
                         disabled={config.allQuestions}
-                        className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-100 dark:disabled:bg-slate-600 disabled:text-slate-500 dark:disabled:text-slate-400"
+                        className="flex-1 h-[42px] px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:bg-slate-100 dark:disabled:bg-slate-600 disabled:text-slate-500 dark:disabled:text-slate-400"
                      />
                      {config.testMode === 'extract' && (
-                       <label className="flex items-center space-x-2 cursor-pointer">
-                         <input 
-                           type="checkbox"
-                           checked={config.allQuestions}
-                           onChange={e => setConfig({...config, allQuestions: e.target.checked})}
-                           className="w-4 h-4 text-blue-600 bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-600 checked:border-blue-600"
-                         />
-                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t.allQuestions}</span>
-                       </label>
+                       <ToggleSwitch
+                         checked={config.allQuestions}
+                         onChange={(checked) => setConfig({...config, allQuestions: checked})}
+                         label={t.allQuestions}
+                       />
                      )}
                    </div>
                 </div>
                 {config.testMode === 'generate' && (
                   <div>
                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.optionsPerQuestion}</label>
-                     <select 
-                        value={config.numOptions}
-                        onChange={e => setConfig({...config, numOptions: parseInt(e.target.value)})}
-                        className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-                     >
-                        <option value={2}>2 (True/False style)</option>
-                        <option value={3}>3</option>
-                        <option value={4}>4 (Standard)</option>
-                        <option value={5}>5</option>
-                     </select>
+                     <div className="relative">
+                       <select 
+                          value={config.numOptions}
+                          onChange={e => setConfig({...config, numOptions: parseInt(e.target.value)})}
+                          className="w-full h-[42px] px-4 pr-10 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 appearance-none cursor-pointer"
+                       >
+                          <option value={2}>2 (True/False style)</option>
+                          <option value={3}>3</option>
+                          <option value={4}>4 (Standard)</option>
+                          <option value={5}>5</option>
+                       </select>
+                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                     </div>
                   </div>
                 )}
               </div>
@@ -347,15 +355,18 @@ Be accurate and preserve the original content as much as possible.`;
                 <div className="space-y-4">
                    <div>
                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.importIntoSubject}</label>
-                     <select
-                       value={targetSubjectId}
-                       onChange={e => setTargetSubjectId(e.target.value)}
-                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-                     >
-                       {subjects.map(s => (
-                         <option key={s.id} value={s.id}>{s.name}</option>
-                       ))}
-                     </select>
+                     <div className="relative">
+                       <select
+                         value={targetSubjectId}
+                         onChange={e => setTargetSubjectId(e.target.value)}
+                         className="w-full h-[42px] px-4 pr-10 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 appearance-none cursor-pointer"
+                       >
+                         {subjects.map(s => (
+                           <option key={s.id} value={s.id}>{s.name}</option>
+                         ))}
+                       </select>
+                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                     </div>
                    </div>
                    
                    <div>

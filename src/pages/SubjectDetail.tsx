@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Play, Trash2, Clock, HelpCircle, CheckCircle2, AlertTriangle, MoreHorizontal, Edit, ListChecks, RotateCcw, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Plus, Play, Trash2, Clock, HelpCircle, CheckCircle2, AlertTriangle, MoreHorizontal, Edit, ListChecks, RotateCcw, MoreVertical, Copy, ChevronDown } from 'lucide-react';
 import { UserData, Test, Subject, TestMode } from '../types';
 import { Language, getTranslation } from '../services/translations';
 import { buildTestRunQuery, calculateSubjectStats, getFailedQuestionsForSubject, getBookmarkedQuestionsForSubject } from '../utils';
 import TestEditor from '../components/features/TestEditor';
-import { Modal } from '../components/common';
+import { Modal, ToggleSwitch } from '../components/common';
 import { useModal } from '../hooks';
 
 interface SubjectDetailProps {
@@ -23,11 +23,13 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
   const [selectedTests, setSelectedTests] = useState<Set<string>>(new Set());
   const [editingTest, setEditingTest] = useState<Test | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
-  const [shuffleQuestions, setShuffleQuestions] = useState(false);
-  const [shuffleAnswers, setShuffleAnswers] = useState(false);
+  const [shuffleQuestions, setShuffleQuestions] = useState(true);
+  const [shuffleAnswers, setShuffleAnswers] = useState(true);
   const [showModeSelector, setShowModeSelector] = useState(false);
-  const [pendingAction, setPendingAction] = useState<{type: 'selected' | 'failed' | 'bookmarked', ids?: string} | null>(null);
+  const [pendingAction, setPendingAction] = useState<{type: 'selected' | 'failed' | 'bookmarked' | 'single', ids?: string} | null>(null);
   const [showFailedMenu, setShowFailedMenu] = useState(false);
+  const [openTestMenu, setOpenTestMenu] = useState<string | null>(null);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const t = getTranslation(language);
   const { modalState, showConfirm, closeModal } = useModal();
   
@@ -67,6 +69,11 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
     navigate(`/run/${id}?${query}`);
   };
 
+  const handleRunSingleTest = (testId: string, mode: TestMode) => {
+    const query = buildTestRunQuery(`tests=${testId}&mode=${mode}`, shuffleQuestions, shuffleAnswers);
+    navigate(`/run/${id}?${query}`);
+  };
+
   const handleRunAll = (mode: TestMode) => {
     const idList = tests.map(t => t.id).join(',');
     if(!idList) return;
@@ -84,7 +91,7 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
     navigate(`/run/${id}?${query}`);
   };
 
-  const openModeSelector = (type: 'selected' | 'failed' | 'bookmarked', ids?: string) => {
+  const openModeSelector = (type: 'selected' | 'failed' | 'bookmarked' | 'single', ids?: string) => {
     setPendingAction({type, ids});
     setShowModeSelector(true);
   };
@@ -95,6 +102,11 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
     switch(pendingAction.type) {
       case 'selected':
         handleRunTests(mode);
+        break;
+      case 'single':
+        if (pendingAction.ids) {
+          handleRunSingleTest(pendingAction.ids, mode);
+        }
         break;
       case 'failed':
         handleRunFailed(mode);
@@ -140,6 +152,24 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
   const handleCancelEdit = () => {
     setEditingTest(null);
     setIsCreatingNew(false);
+  };
+
+  const handleDuplicateTest = (test: Test, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const duplicatedTest: Test = {
+      ...test,
+      id: crypto.randomUUID(),
+      title: `${test.title} (${language === 'es' ? 'copia' : 'copy'})`,
+      createdAt: Date.now(),
+    };
+    onAddTest(duplicatedTest);
+    showConfirm(
+      t.success,
+      `${t.testTitle} "${test.title}" ${language === 'es' ? 'ha sido duplicado' : 'has been duplicated'}`,
+      () => {},
+      'OK',
+      undefined
+    );
   };
 
   return (
@@ -289,29 +319,6 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
                 </button>
             </div>
           </div>
-          
-          {/* Test Options */}
-          <div className="flex items-center gap-4 text-sm">
-            <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">{t.testOptions}:</span>
-            <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">
-              <input 
-                type="checkbox" 
-                checked={shuffleQuestions}
-                onChange={(e) => setShuffleQuestions(e.target.checked)}
-                className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:bg-slate-700"
-              />
-              {t.shuffleQuestions}
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100">
-              <input 
-                type="checkbox" 
-                checked={shuffleAnswers}
-                onChange={(e) => setShuffleAnswers(e.target.checked)}
-                className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:bg-slate-700"
-              />
-              {t.shuffleAnswers}
-            </label>
-          </div>
         </div>
       )}
 
@@ -336,39 +343,159 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
                     </div>
                 </div>
 
-                <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Botones en desktop - Play visible + menú */}
+                <div className="hidden md:flex items-center space-x-2">
                     <button 
                         onClick={(e) => {
                              e.stopPropagation();
-                             navigate(`/run/${subject.id}?tests=${test.id}&mode=${TestMode.STUDY}`);
+                             openModeSelector('single', test.id);
                         }}
                         className="start-test-btn p-2 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full"
                         title={t.runOnlyThis}
                     >
                         <Play className="w-4 h-4" />
                     </button>
-                    <button 
-                        onClick={(e) => handleEditTest(test, e)}
-                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full"
-                        title={t.editTest}
-                    >
-                        <Edit className="w-4 h-4" />
-                    </button>
-                    <button 
+                    <div className="relative">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenTestMenu(openTestMenu === test.id ? null : test.id);
+                            }}
+                            className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                        >
+                            <MoreVertical className="w-5 h-5" />
+                        </button>
+                        
+                        {openTestMenu === test.id && (
+                            <>
+                                <div 
+                                    className="fixed inset-0 z-40" 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenTestMenu(null);
+                                    }}
+                                />
+                                <div className="absolute right-0 top-10 z-50 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[200px]">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenTestMenu(null);
+                                            handleEditTest(test, e);
+                                        }}
+                                        className="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3"
+                                    >
+                                        <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                        {t.editTest}
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenTestMenu(null);
+                                            handleDuplicateTest(test, e);
+                                        }}
+                                        className="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3"
+                                    >
+                                        <Copy className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                        {t.duplicateTest}
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenTestMenu(null);
+                                            showConfirm(
+                                                t.confirm,
+                                                t.deleteTest + '?',
+                                                () => onDeleteTest(test.id),
+                                                t.confirm,
+                                                t.cancel
+                                            );
+                                        }}
+                                        className="w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        {t.deleteTest}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Menú móvil (tres puntos con todas las opciones) */}
+                <div className="md:hidden relative">
+                    <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            showConfirm(
-                                t.confirm,
-                                t.deleteTest + '?',
-                                () => onDeleteTest(test.id),
-                                t.confirm,
-                                t.cancel
-                            );
+                            setOpenTestMenu(openTestMenu === test.id ? null : test.id);
                         }}
-                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full"
+                        className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                     >
-                        <Trash2 className="w-4 h-4" />
+                        <MoreVertical className="w-5 h-5" />
                     </button>
+                    
+                    {openTestMenu === test.id && (
+                        <>
+                            <div 
+                                className="fixed inset-0 z-40" 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenTestMenu(null);
+                                }}
+                            />
+                            <div className="absolute right-0 top-10 z-50 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[200px]">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenTestMenu(null);
+                                        openModeSelector('single', test.id);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3"
+                                >
+                                    <Play className="w-4 h-4 text-primary dark:text-blue-400" />
+                                    {t.runOnlyThis}
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenTestMenu(null);
+                                        handleEditTest(test, e);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3"
+                                >
+                                    <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                    {t.editTest}
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenTestMenu(null);
+                                        handleDuplicateTest(test, e);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3"
+                                >
+                                    <Copy className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                    {t.duplicateTest}
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenTestMenu(null);
+                                        showConfirm(
+                                            t.confirm,
+                                            t.deleteTest + '?',
+                                            () => onDeleteTest(test.id),
+                                            t.confirm,
+                                            t.cancel
+                                        );
+                                    }}
+                                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    {t.deleteTest}
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         ))}
@@ -395,10 +522,38 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
 
       {/* Mode Selector Modal */}
       {showModeSelector && (
-        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setShowModeSelector(false)}>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowModeSelector(false)}>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-4 md:p-6 my-auto max-h-[95vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.selectTestMode}</h3>
-            <p className="text-slate-500 dark:text-slate-400 mb-6">{t.selectTestModeDescription}</p>
+            <p className="text-slate-500 dark:text-slate-400 mb-4">{t.selectTestModeDescription}</p>
+            
+            {/* Advanced Options Collapsible */}
+            <div className="mb-6">
+              <button
+                onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                className="w-full flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  {language === 'es' ? 'Opciones avanzadas' : 'Advanced options'}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform duration-200 ${showAdvancedOptions ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showAdvancedOptions && (
+                <div className="mt-2 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg space-y-3 animate-in fade-in slide-in-from-top-2">
+                  <ToggleSwitch
+                    checked={shuffleQuestions}
+                    onChange={setShuffleQuestions}
+                    label={t.shuffleQuestions}
+                  />
+                  <ToggleSwitch
+                    checked={shuffleAnswers}
+                    onChange={setShuffleAnswers}
+                    label={t.shuffleAnswers}
+                  />
+                </div>
+              )}
+            </div>
             
             <div className="space-y-3">
               <button

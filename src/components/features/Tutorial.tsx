@@ -202,21 +202,21 @@ const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, language }) => {
       )}
 
       {/* Tutorial Modal */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[102] w-full max-w-2xl mx-4">
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="fixed inset-4 md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2 z-[102] md:w-full md:max-w-2xl flex items-center justify-center">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden w-full max-h-[90vh] flex flex-col">
           {/* Header */}
-          <div className="bg-gradient-to-r from-primary to-blue-600 text-white p-6">
+          <div className="bg-gradient-to-r from-primary to-blue-600 text-white p-4 md:p-6 flex-shrink-0">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-bold">{step.title}</h2>
+              <h2 className="text-xl md:text-2xl font-bold">{step.title}</h2>
               <button
                 onClick={handleSkip}
                 className="text-white/80 hover:text-white transition-colors"
                 aria-label="Close tutorial"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-white/90">
+            <div className="flex items-center space-x-2 text-xs md:text-sm text-white/90">
               <span>Paso {currentStep + 1} de {tutorialSteps.length}</span>
               <div className="flex-1 bg-white/20 rounded-full h-2 max-w-xs">
                 <div
@@ -227,51 +227,51 @@ const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, language }) => {
             </div>
           </div>
 
-          {/* Content */}
-          <div className="p-8">
-            <p className="text-slate-700 text-lg leading-relaxed">
+          {/* Content - Scrollable */}
+          <div className="p-4 md:p-8 overflow-y-auto flex-1">
+            <p className="text-slate-700 dark:text-slate-300 text-base md:text-lg leading-relaxed">
               {step.description}
             </p>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between p-6 bg-slate-50 border-t border-slate-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 md:p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 flex-shrink-0">
             <button
               onClick={handleSkip}
-              className="text-slate-500 hover:text-slate-700 transition-colors font-medium"
+              className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors font-medium text-sm"
             >
               Saltar tutorial
             </button>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 md:space-x-3 w-full sm:w-auto">
               <button
                 onClick={handlePrev}
                 disabled={isFirstStep}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
+                className={`flex items-center justify-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 rounded-lg transition-all text-sm md:text-base flex-1 sm:flex-initial ${
                   isFirstStep
-                    ? 'text-slate-300 cursor-not-allowed'
-                    : 'text-slate-600 hover:bg-slate-200'
+                    ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
-                <ChevronLeft className="w-5 h-5" />
-                <span>Anterior</span>
+                <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="hidden sm:inline">Anterior</span>
               </button>
 
               {isLastStep ? (
                 <button
                   onClick={handleComplete}
-                  className="flex items-center space-x-2 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+                  className="flex items-center justify-center space-x-1 md:space-x-2 px-4 md:px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium text-sm md:text-base flex-1 sm:flex-initial"
                 >
-                  <Check className="w-5 h-5" />
+                  <Check className="w-4 h-4 md:w-5 md:h-5" />
                   <span>Finalizar</span>
                 </button>
               ) : (
                 <button
                   onClick={handleNext}
-                  className="flex items-center space-x-2 px-6 py-2 bg-primary hover:bg-blue-600 text-white rounded-lg transition-colors font-medium"
+                  className="flex items-center justify-center space-x-1 md:space-x-2 px-4 md:px-6 py-2 bg-primary hover:bg-blue-600 text-white rounded-lg transition-colors font-medium text-sm md:text-base flex-1 sm:flex-initial"
                 >
                   <span>Siguiente</span>
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
               )}
             </div>

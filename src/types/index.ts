@@ -54,6 +54,8 @@ export interface TestResult {
   mode: TestMode;
   timeTaken: number; // Total seconds
   answers: QuestionResult[];
+  testType?: 'failed' | 'bookmarked' | 'specific'; // Type of special test
+  questionIds?: string[]; // For specific question tests
 }
 
 export interface UserData {

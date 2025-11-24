@@ -147,7 +147,9 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
         totalQuestions: activeQuestions.length,
         mode: mode,
         timeTaken: elapsed,
-        answers: resultDetails
+        answers: resultDetails,
+        testType: type as 'failed' | 'bookmarked' | 'specific' | undefined,
+        questionIds: type ? activeQuestions.map(q => q.id) : undefined
     };
 
     onSaveResult(result);
@@ -238,6 +240,14 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
       {/* Header */}
       <div className="flex items-center justify-between mb-6 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
          <div className="flex items-center space-x-4">
+            <button 
+               onClick={() => navigate(`/subject/${subjectId}`)}
+               className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+               title={t.backToSubject}
+            >
+               <ChevronLeft className="w-5 h-5" />
+            </button>
+            <div className="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
             <span className="text-xl font-bold text-primary dark:text-blue-400">Q{currentIndex + 1}<span className="text-slate-400 dark:text-slate-500 text-base font-normal">/{activeQuestions.length}</span></span>
             <div className="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
             <div className="text-slate-500 dark:text-slate-400 text-sm font-mono">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, '0')}</div>
