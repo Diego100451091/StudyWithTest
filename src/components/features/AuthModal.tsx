@@ -90,17 +90,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full p-6 relative">
+      <div className="bg-slate-900 rounded-lg max-w-md w-full p-6 relative shadow-2xl border border-slate-700">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        <h2 className="text-2xl font-bold text-white mb-6">
           {isSignUp ? t.createAccount : t.signIn}
         </h2>
 
@@ -109,16 +109,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {/* Display Name (only for sign up) */}
           {isSignUp && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-300 mb-1">
                 {t.displayName}
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-slate-500"
                   placeholder={t.displayName}
                   disabled={loading}
                 />
@@ -128,16 +128,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-300 mb-1">
               {t.email}
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-slate-500"
                 placeholder={t.email}
                 disabled={loading}
               />
@@ -146,16 +146,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-300 mb-1">
               {t.password}
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-slate-500"
                 placeholder={t.password}
                 disabled={loading}
               />
@@ -165,16 +165,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {/* Confirm Password (only for sign up) */}
           {isSignUp && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-300 mb-1">
                 {t.confirmPassword}
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-slate-500"
                   placeholder={t.confirmPassword}
                   disabled={loading}
                 />
@@ -184,7 +184,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {/* Error message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-900/30 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -200,7 +200,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </form>
 
         {/* Toggle between sign in and sign up */}
-        <div className="mt-4 text-center text-sm text-gray-600">
+        <div className="mt-4 text-center text-sm text-slate-400">
           {isSignUp ? t.alreadyHaveAccount : t.dontHaveAccount}
           {' '}
           <button
@@ -208,7 +208,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               setIsSignUp(!isSignUp);
               setError('');
             }}
-            className="text-blue-600 hover:underline font-medium"
+            className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors"
           >
             {isSignUp ? t.signIn : t.signUp}
           </button>
