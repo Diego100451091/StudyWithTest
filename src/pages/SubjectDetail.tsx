@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Play, Trash2, Clock, HelpCircle, CheckCircle2, AlertTriangle, MoreHorizontal, Edit, ListChecks, RotateCcw, MoreVertical, Copy, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Plus, Play, Trash2, Clock, HelpCircle, CheckCircle2, AlertTriangle, MoreHorizontal, Edit, ListChecks, RotateCcw, MoreVertical, Copy, ChevronDown, Download, Upload } from 'lucide-react';
 import { UserData, Test, Subject, TestMode } from '../types';
 import { Language, getTranslation } from '../services/translations';
 import { buildTestRunQuery, calculateSubjectStats, getFailedQuestionsForSubject, getBookmarkedQuestionsForSubject } from '../utils';
@@ -15,9 +15,11 @@ interface SubjectDetailProps {
   onDeleteTest: (id: string) => void;
   onUpdateTest: (test: Test) => void;
   onClearFailedQuestions: (subjectId: string) => void;
+  onExportTest: (testId: string) => void;
+  onImportTest: (jsonData: string, subjectId: string, onSuccess?: () => void, onError?: (message: string) => void) => void;
 }
 
-const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest, onDeleteTest, onUpdateTest, onClearFailedQuestions }) => {
+const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest, onDeleteTest, onUpdateTest, onClearFailedQuestions, onExportTest, onImportTest }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedTests, setSelectedTests] = useState<Set<string>>(new Set());
@@ -30,8 +32,11 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
   const [showFailedMenu, setShowFailedMenu] = useState(false);
   const [openTestMenu, setOpenTestMenu] = useState<string | null>(null);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importJson, setImportJson] = useState('');
+  const importFileRef = useRef<HTMLInputElement>(null);
   const t = getTranslation(language);
-  const { modalState, showConfirm, closeModal } = useModal();
+  const { modalState, showConfirm, showSuccess, showError, closeModal } = useModal();
   
   const subject = data.subjects.find(s => s.id === id);
   const tests = data.tests.filter(t => t.subjectId === id);
@@ -172,6 +177,49 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
     );
   };
 
+  const handleExportTest = (test: Test, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onExportTest(test.id);
+    showSuccess(
+      t.success,
+      `${t.testTitle} "${test.title}" ${language === 'es' ? 'ha sido exportado' : 'has been exported'}`
+    );
+  };
+
+  const handleImportClick = () => {
+    setShowImportModal(true);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setImportJson(content);
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleImportTest = () => {
+    if (!importJson.trim()) {
+      showError(t.error, language === 'es' ? 'Por favor ingresa el JSON del test' : 'Please enter the test JSON');
+      return;
+    }
+    
+    onImportTest(
+      importJson,
+      id!,
+      () => {
+        showSuccess(t.success, t.importSuccess);
+        setShowImportModal(false);
+        setImportJson('');
+      },
+      (message) => showError(t.error, message)
+    );
+  };
+
   return (
     <>
       {editingTest && (
@@ -203,6 +251,13 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
             >
               <Plus className="w-4 h-4" />
               <span>{t.createTestManually}</span>
+            </button>
+            <button
+              onClick={handleImportClick}
+              className="flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all shadow-md"
+            >
+              <Upload className="w-4 h-4" />
+              <span>{t.importTest}</span>
             </button>
             <Link 
               to="/ai-tools" 
@@ -402,6 +457,17 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setOpenTestMenu(null);
+                                            handleExportTest(test, e);
+                                        }}
+                                        className="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3"
+                                    >
+                                        <Download className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                        {t.exportTest}
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenTestMenu(null);
                                             showConfirm(
                                                 t.confirm,
                                                 t.deleteTest + '?',
@@ -480,6 +546,17 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setOpenTestMenu(null);
+                                        handleExportTest(test, e);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3"
+                                >
+                                    <Download className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                    {t.exportTest}
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenTestMenu(null);
                                         showConfirm(
                                             t.confirm,
                                             t.deleteTest + '?',
@@ -519,6 +596,68 @@ const SubjectDetail: React.FC<SubjectDetailProps> = ({ data, language, onAddTest
         confirmText={modalState.confirmText}
         cancelText={modalState.cancelText}
       />
+
+      {/* Import Test Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowImportModal(false)}>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full p-6 my-auto max-h-[95vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t.importTest}</h3>
+            <p className="text-slate-500 dark:text-slate-400 mb-4">
+              {language === 'es' 
+                ? 'Pega el contenido JSON de un test exportado o selecciona un archivo JSON.' 
+                : 'Paste the JSON content of an exported test or select a JSON file.'}
+            </p>
+            
+            <div className="mb-4">
+              <input
+                ref={importFileRef}
+                type="file"
+                accept=".json"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <button
+                onClick={() => importFileRef.current?.click()}
+                className="w-full px-4 py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg hover:border-primary dark:hover:border-blue-500 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-slate-600 dark:text-slate-400 flex items-center justify-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                {language === 'es' ? 'Seleccionar archivo JSON' : 'Select JSON file'}
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                {language === 'es' ? 'O pega el JSON aquí:' : 'Or paste JSON here:'}
+              </label>
+              <textarea
+                value={importJson}
+                onChange={(e) => setImportJson(e.target.value)}
+                className="w-full h-64 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-mono text-xs"
+                placeholder={language === 'es' ? 'Pega el JSON del test aquí...' : 'Paste test JSON here...'}
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowImportModal(false);
+                  setImportJson('');
+                }}
+                className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={handleImportTest}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-lg flex items-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                {t.importTest}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mode Selector Modal */}
       {showModeSelector && (

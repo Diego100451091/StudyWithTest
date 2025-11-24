@@ -35,6 +35,8 @@ const App: React.FC = () => {
     clearFailedQuestionsForSubject,
     exportData,
     importData,
+    exportTest,
+    importTest,
     signInWithEmail,
     signUpWithEmail,
     signOutFromGoogle,
@@ -115,6 +117,8 @@ const App: React.FC = () => {
                     onDeleteTest={deleteTest}
                     onUpdateTest={updateTest}
                     onClearFailedQuestions={clearFailedQuestionsForSubject}
+                    onExportTest={exportTest}
+                    onImportTest={importTest}
                 />
             } 
           />

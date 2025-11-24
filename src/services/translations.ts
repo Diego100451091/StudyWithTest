@@ -51,6 +51,8 @@ export interface Translations {
   editTest: string;
   deleteTest: string;
   duplicateTest: string;
+  exportTest: string;
+  importTest: string;
   noTestsYet: string;
   generateWithAI: string;
   createTestManually: string;
@@ -317,6 +319,8 @@ export const translations: Record<Language, Translations> = {
     editTest: 'Editar test',
     deleteTest: 'Eliminar este test',
     duplicateTest: 'Duplicar test',
+    exportTest: 'Exportar test',
+    importTest: 'Importar test',
     noTestsYet: 'Aún no hay tests en esta asignatura.',
     generateWithAI: 'Genera uno con IA',
     createTestManually: 'Crear Test Manualmente',
@@ -582,6 +586,8 @@ export const translations: Record<Language, Translations> = {
     editTest: 'Edit test',
     deleteTest: 'Delete this test',
     duplicateTest: 'Duplicate test',
+    exportTest: 'Export test',
+    importTest: 'Import test',
     noTestsYet: 'No tests in this subject yet.',
     generateWithAI: 'Generate one with AI',
     createTestManually: 'Create Test Manually',

@@ -584,6 +584,64 @@ export const useStore = () => {
     a.click();
   };
 
+  const exportTest = (testId: string) => {
+    const test = data.tests.find(t => t.id === testId);
+    if (!test) {
+      console.error('Test not found');
+      return;
+    }
+    const blob = new Blob([JSON.stringify(test, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const safeTitle = test.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    a.download = `test_${safeTitle}_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importTest = (jsonData: string, subjectId: string, onSuccess?: () => void, onError?: (message: string) => void) => {
+    try {
+      const parsed = JSON.parse(jsonData);
+      // Basic validation
+      if (!parsed.title || !parsed.questions || !Array.isArray(parsed.questions)) {
+        throw new Error("Invalid test format");
+      }
+      
+      // Create new test with new ID and assign to specified subject
+      const newTest: Test = {
+        ...parsed,
+        id: crypto.randomUUID(),
+        subjectId: subjectId,
+        createdAt: Date.now()
+      };
+      
+      // Generate new IDs for all questions and options to avoid conflicts
+      newTest.questions = newTest.questions.map(q => {
+        const newQuestion: Question = {
+          ...q,
+          id: crypto.randomUUID(),
+          options: q.options.map(o => ({
+            ...o,
+            id: crypto.randomUUID()
+          }))
+        };
+        // Update correctOptionId to match new option ID
+        const oldCorrectIdx = q.options.findIndex(o => o.id === q.correctOptionId);
+        if (oldCorrectIdx !== -1) {
+          newQuestion.correctOptionId = newQuestion.options[oldCorrectIdx].id;
+        }
+        return newQuestion;
+      });
+      
+      addTest(newTest);
+      if (onSuccess) onSuccess();
+    } catch (e) {
+      console.error('Failed to import test:', e);
+      if (onError) onError("Failed to import test. Invalid JSON.");
+    }
+  };
+
   const importData = (jsonData: string, onSuccess?: () => void, onError?: (message: string) => void) => {
     try {
       const parsed = JSON.parse(jsonData);
@@ -769,6 +827,8 @@ export const useStore = () => {
     clearFailedQuestionsForSubject,
     exportData,
     importData,
+    exportTest,
+    importTest,
     signInWithEmail,
     signUpWithEmail,
     signOutFromGoogle,
