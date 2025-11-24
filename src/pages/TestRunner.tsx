@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Flag, Check, X, Clock, RotateCcw, Save, CheckCircle2 } from 'lucide-react';
 import { UserData, Test, Question, QuestionResult, TestMode, TestResult } from '../types';
@@ -20,6 +20,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
   const navigate = useNavigate();
   const t = getTranslation(language);
   const { modalState, showError, closeModal } = useModal();
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Query Params
   const testIds = searchParams.get('tests')?.split(',') || [];
@@ -104,6 +105,13 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
   const currentQuestion = activeQuestions[currentIndex];
   const isBookmarked = currentQuestion && data.bookmarkedQuestionIds.includes(currentQuestion.id);
   const hasAnswered = currentQuestion && !!answers[currentQuestion.id];
+
+  // Auto-scroll to top when question changes
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentIndex]);
 
   const buildRunUrl = (baseParams: string) => {
     const params = new URLSearchParams(baseParams);
@@ -271,7 +279,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({ data, language, onSaveResult, o
       </div>
 
       {/* Question Card */}
-      <div className="flex-1 min-h-0 overflow-y-auto mb-6 pb-4">
+      <div ref={contentRef} className="flex-1 min-h-0 overflow-y-auto mb-6 pb-4">
         <h2 className="text-xl md:text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-6 leading-relaxed">
             {currentQuestion.text}
         </h2>
