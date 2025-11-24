@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Copy, Check, FileJson, ArrowRight, AlertCircle, ChevronDown } from 'lucide-react';
 import { UserData, Subject, Test, Question } from '../../types';
 import { Language, getTranslation } from '../../services/translations';
-import { Modal, ToggleSwitch } from '../common';
+import { Modal, ToggleSwitch, InfoButton } from '../common';
 import { useModal } from '../../hooks';
 
 interface AIToolsProps {
@@ -201,7 +201,10 @@ Be accurate and preserve the original content as much as possible.`;
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.mode}</label>
+                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                     {t.mode}
+                     <InfoButton content={t.modeInfo} />
+                   </label>
                    <div className="relative">
                      <select 
                         value={config.testMode}
@@ -215,7 +218,10 @@ Be accurate and preserve the original content as much as possible.`;
                    </div>
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.topicContext}</label>
+                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                     {t.topicContext}
+                     <InfoButton content={t.topicContextInfo} />
+                   </label>
                    <input 
                       type="text"
                       value={config.focusTopic}
@@ -228,7 +234,10 @@ Be accurate and preserve the original content as much as possible.`;
                    />
                 </div>
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.testLanguage}</label>
+                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                     {t.testLanguage}
+                     <InfoButton content={t.testLanguageInfo} />
+                   </label>
                    <div className="relative">
                      <select 
                         value={config.language}
@@ -252,7 +261,10 @@ Be accurate and preserve the original content as much as possible.`;
                 </div>
                 {config.testMode === 'generate' && (
                   <div>
-                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.difficulty}</label>
+                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                       {t.difficulty}
+                       <InfoButton content={t.difficultyInfo} />
+                     </label>
                      <div className="relative">
                        <select 
                           value={config.difficulty}
@@ -269,7 +281,10 @@ Be accurate and preserve the original content as much as possible.`;
                   </div>
                 )}
                 <div>
-                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.numQuestions}</label>
+                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                     {t.numQuestions}
+                     <InfoButton content={t.numQuestionsInfo} />
+                   </label>
                    <div className="flex items-center space-x-3">
                      <input 
                         type="number"
@@ -290,7 +305,10 @@ Be accurate and preserve the original content as much as possible.`;
                 </div>
                 {config.testMode === 'generate' && (
                   <div>
-                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t.optionsPerQuestion}</label>
+                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                       {t.optionsPerQuestion}
+                       <InfoButton content={t.optionsPerQuestionInfo} />
+                     </label>
                      <div className="relative">
                        <select 
                           value={config.numOptions}

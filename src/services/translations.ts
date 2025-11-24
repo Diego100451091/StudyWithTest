@@ -255,6 +255,14 @@ export interface Translations {
   noQuestionsFound: string;
   darkMode: string;
   lightMode: string;
+  
+  // AI Tools Info Tooltips
+  modeInfo: string;
+  topicContextInfo: string;
+  testLanguageInfo: string;
+  difficultyInfo: string;
+  numQuestionsInfo: string;
+  optionsPerQuestionInfo: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -513,6 +521,14 @@ export const translations: Record<Language, Translations> = {
     noQuestionsFound: 'No se encontraron preguntas para la selección.',
     darkMode: 'Modo Oscuro',
     lightMode: 'Modo Claro',
+    
+    // AI Tools Info Tooltips
+    modeInfo: 'Generar Test: La IA creará preguntas nuevas basadas en el contenido que proporciones. Extraer Test: La IA extraerá preguntas ya existentes en el documento (ideal para PDFs con tests).',
+    topicContextInfo: 'Especifica el tema o contexto específico sobre el que quieres generar/extraer preguntas. Deja vacío para abarcar todo el contenido proporcionado.',
+    testLanguageInfo: 'Idioma en el que se generarán las preguntas, opciones y explicaciones del test. Asegúrate de que coincida con el idioma de tu contenido.',
+    difficultyInfo: 'Fácil: Preguntas básicas de conceptos fundamentales. Intermedio: Requiere comprensión de conceptos. Difícil: Preguntas complejas que requieren análisis. Experto: Requiere dominio profundo y pensamiento crítico.',
+    numQuestionsInfo: 'Cantidad de preguntas a generar/extraer. En modo Extraer, puedes activar "Todas" para obtener todas las preguntas del documento.',
+    optionsPerQuestionInfo: 'Número de opciones de respuesta por pregunta. 2 opciones: estilo Verdadero/Falso. 4 opciones: formato estándar de examen. Más opciones aumentan la dificultad.',
   },
   
   en: {
@@ -770,6 +786,14 @@ export const translations: Record<Language, Translations> = {
     noQuestionsFound: 'No questions found for selection.',
     darkMode: 'Dark Mode',
     lightMode: 'Light Mode',
+    
+    // AI Tools Info Tooltips
+    modeInfo: 'Generate Test: AI will create new questions based on the content you provide. Extract Test: AI will extract existing questions from the document (ideal for PDFs with tests).',
+    topicContextInfo: 'Specify the specific topic or context you want to generate/extract questions about. Leave empty to cover all provided content.',
+    testLanguageInfo: 'Language in which the test questions, options, and explanations will be generated. Make sure it matches the language of your content.',
+    difficultyInfo: 'Easy: Basic questions on fundamental concepts. Intermediate: Requires understanding of concepts. Hard: Complex questions requiring analysis. Expert: Requires deep mastery and critical thinking.',
+    numQuestionsInfo: 'Number of questions to generate/extract. In Extract mode, you can enable "All" to get all questions from the document.',
+    optionsPerQuestionInfo: 'Number of answer options per question. 2 options: True/False style. 4 options: standard exam format. More options increase difficulty.',
   }
 };
 
