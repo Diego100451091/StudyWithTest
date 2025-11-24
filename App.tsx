@@ -43,6 +43,8 @@ const App: React.FC = () => {
     syncWithFirebase,
     resolveConflictKeepLocal,
     resolveConflictKeepFirebase,
+    deleteAllData,
+    deleteAccount,
   } = useStore();
 
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -155,6 +157,8 @@ const App: React.FC = () => {
                 firebaseAuth={firebaseAuth}
                 onExport={exportData}
                 onImport={() => { /* Triggered via ref in Settings */ }}
+                onDeleteAllData={deleteAllData}
+                onDeleteAccount={deleteAccount}
               />
             } 
           />

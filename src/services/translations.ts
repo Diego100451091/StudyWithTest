@@ -247,6 +247,27 @@ export interface Translations {
   importButton: string;
   accountSettings: string;
   
+  // Delete Data & Account
+  dangerZone: string;
+  deleteAllData: string;
+  deleteAllDataDescription: string;
+  deleteAllDataButton: string;
+  deleteAllDataConfirmTitle: string;
+  deleteAllDataConfirmDescription: string;
+  typeToConfirm: string;
+  deleteAllDataConfirmText: string;
+  allDataDeleted: string;
+  deleteAllDataError: string;
+  deleteAccount: string;
+  deleteAccountDescription: string;
+  deleteAccountButton: string;
+  deleteAccountConfirmTitle: string;
+  deleteAccountConfirmDescription: string;
+  deleteAccountConfirmText: string;
+  accountDeleted: string;
+  deleteAccountError: string;
+  confirmationMismatch: string;
+  
   // Modals
   confirm: string;
   warning: string;
@@ -515,6 +536,27 @@ export const translations: Record<Language, Translations> = {
     importButton: 'Importar Datos',
     accountSettings: 'Configuración de Cuenta',
     
+    // Delete Data & Account
+    dangerZone: 'Borrado de Datos',
+    deleteAllData: 'Borrar Todos los Datos',
+    deleteAllDataDescription: 'Elimina permanentemente todas las asignaturas, tests y resultados. Esta acción no se puede deshacer.',
+    deleteAllDataButton: 'Borrar Todos los Datos',
+    deleteAllDataConfirmTitle: 'Confirmar Borrado de Datos',
+    deleteAllDataConfirmDescription: 'Esta acción eliminará permanentemente todos tus datos. Para confirmar, escribe exactamente:',
+    typeToConfirm: 'Escribe aquí para confirmar',
+    deleteAllDataConfirmText: 'BORRAR TODO',
+    allDataDeleted: 'Todos los datos han sido eliminados',
+    deleteAllDataError: 'Error al borrar los datos',
+    deleteAccount: 'Eliminar Cuenta',
+    deleteAccountDescription: 'Elimina permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.',
+    deleteAccountButton: 'Eliminar Cuenta',
+    deleteAccountConfirmTitle: 'Confirmar Eliminación de Cuenta',
+    deleteAccountConfirmDescription: 'Esta acción eliminará permanentemente tu cuenta y todos tus datos. No podrás recuperar tu cuenta. Para confirmar, escribe exactamente:',
+    deleteAccountConfirmText: 'ELIMINAR CUENTA',
+    accountDeleted: 'Tu cuenta ha sido eliminada',
+    deleteAccountError: 'Error al eliminar la cuenta',
+    confirmationMismatch: 'El texto de confirmación no coincide',
+    
     // Modals
     confirm: 'Confirmar',
     warning: 'Advertencia',
@@ -781,6 +823,27 @@ export const translations: Record<Language, Translations> = {
     exportButton: 'Export Data',
     importButton: 'Import Data',
     accountSettings: 'Account Settings',
+    
+    // Delete Data & Account
+    dangerZone: 'Data Deletion',
+    deleteAllData: 'Delete All Data',
+    deleteAllDataDescription: 'Permanently delete all subjects, tests, and results. This action cannot be undone.',
+    deleteAllDataButton: 'Delete All Data',
+    deleteAllDataConfirmTitle: 'Confirm Data Deletion',
+    deleteAllDataConfirmDescription: 'This action will permanently delete all your data. To confirm, type exactly:',
+    typeToConfirm: 'Type here to confirm',
+    deleteAllDataConfirmText: 'DELETE ALL',
+    allDataDeleted: 'All data has been deleted',
+    deleteAllDataError: 'Error deleting data',
+    deleteAccount: 'Delete Account',
+    deleteAccountDescription: 'Permanently delete your account and all associated data. This action cannot be undone.',
+    deleteAccountButton: 'Delete Account',
+    deleteAccountConfirmTitle: 'Confirm Account Deletion',
+    deleteAccountConfirmDescription: 'This action will permanently delete your account and all your data. You will not be able to recover your account. To confirm, type exactly:',
+    deleteAccountConfirmText: 'DELETE ACCOUNT',
+    accountDeleted: 'Your account has been deleted',
+    deleteAccountError: 'Error deleting account',
+    confirmationMismatch: 'Confirmation text does not match',
     
     // Modals
     confirm: 'Confirm',

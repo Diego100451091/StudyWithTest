@@ -1,7 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { User, Lock, Download, Upload, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Lock, Download, Upload, Save, AlertCircle, CheckCircle, Trash2, X } from 'lucide-react';
 import { Language, getTranslation } from '../../services/translations';
 import { firebaseService } from '../../services/firebase';
+
+// Simple modal component for confirmation dialogs
+const ConfirmModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}> = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in duration-200">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{title}</h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+          </button>
+        </div>
+        <div className="p-6">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface SettingsProps {
   language: Language;
@@ -16,6 +54,8 @@ interface SettingsProps {
   };
   onExport: () => void;
   onImport: () => void;
+  onDeleteAllData: () => Promise<void>;
+  onDeleteAccount: () => Promise<void>;
 }
 
 const Settings: React.FC<SettingsProps> = ({
@@ -23,6 +63,8 @@ const Settings: React.FC<SettingsProps> = ({
   firebaseAuth,
   onExport,
   onImport,
+  onDeleteAllData,
+  onDeleteAccount,
 }) => {
   const t = getTranslation(language);
   const [displayName, setDisplayName] = useState(firebaseAuth.user?.name || '');
@@ -40,6 +82,18 @@ const Settings: React.FC<SettingsProps> = ({
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  
+  // Delete data modal
+  const [showDeleteDataModal, setShowDeleteDataModal] = useState(false);
+  const [deleteDataConfirmText, setDeleteDataConfirmText] = useState('');
+  const [deleteDataLoading, setDeleteDataLoading] = useState(false);
+  const [deleteDataMessage, setDeleteDataMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  // Delete account modal
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [deleteAccountConfirmText, setDeleteAccountConfirmText] = useState('');
+  const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
+  const [deleteAccountMessage, setDeleteAccountMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,6 +180,56 @@ const Settings: React.FC<SettingsProps> = ({
         window.dispatchEvent(storeEvent);
       };
       reader.readAsText(file);
+    }
+  };
+
+  const handleDeleteAllData = async () => {
+    const expectedText = t.deleteAllDataConfirmText;
+    if (deleteDataConfirmText !== expectedText) {
+      setDeleteDataMessage({ type: 'error', text: t.confirmationMismatch });
+      return;
+    }
+
+    try {
+      setDeleteDataLoading(true);
+      setDeleteDataMessage(null);
+      await onDeleteAllData();
+      setDeleteDataMessage({ type: 'success', text: t.allDataDeleted });
+      setTimeout(() => {
+        setShowDeleteDataModal(false);
+        setDeleteDataConfirmText('');
+        setDeleteDataMessage(null);
+      }, 2000);
+    } catch (error: any) {
+      console.error('Delete data error:', error);
+      setDeleteDataMessage({ type: 'error', text: t.deleteAllDataError });
+    } finally {
+      setDeleteDataLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const expectedText = t.deleteAccountConfirmText;
+    if (deleteAccountConfirmText !== expectedText) {
+      setDeleteAccountMessage({ type: 'error', text: t.confirmationMismatch });
+      return;
+    }
+
+    try {
+      setDeleteAccountLoading(true);
+      setDeleteAccountMessage(null);
+      await onDeleteAccount();
+      setDeleteAccountMessage({ type: 'success', text: t.accountDeleted });
+      setTimeout(() => {
+        setShowDeleteAccountModal(false);
+        setDeleteAccountConfirmText('');
+        setDeleteAccountMessage(null);
+      }, 2000);
+    } catch (error: any) {
+      console.error('Delete account error:', error);
+      setDeleteAccountMessage({ type: 'error', text: t.deleteAccountError });
+    } finally {
+      setDeleteAccountLoading(false);
     }
   };
 
@@ -367,6 +471,181 @@ const Settings: React.FC<SettingsProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Danger Zone - Always visible */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border-2 border-red-200 dark:border-red-800 overflow-hidden">
+        <div className="px-6 py-4 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            <h2 className="text-lg font-semibold text-red-900 dark:text-red-100">{t.dangerZone}</h2>
+          </div>
+        </div>
+        <div className="p-6 space-y-6">
+          {/* Delete All Data */}
+          <div className="space-y-2">
+            <h3 className="font-medium text-slate-900 dark:text-slate-100">{t.deleteAllData}</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t.deleteAllDataDescription}</p>
+            <button
+              onClick={() => setShowDeleteDataModal(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors border border-red-300 dark:border-red-700"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>{t.deleteAllDataButton}</span>
+            </button>
+          </div>
+
+          {/* Delete Account - Only visible when logged in */}
+          {firebaseAuth.isSignedIn && (
+            <div className="space-y-2 pt-6 border-t border-red-200 dark:border-red-800">
+              <h3 className="font-medium text-slate-900 dark:text-slate-100">{t.deleteAccount}</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">{t.deleteAccountDescription}</p>
+              <button
+                onClick={() => setShowDeleteAccountModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{t.deleteAccountButton}</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Delete All Data Modal */}
+      <ConfirmModal
+        isOpen={showDeleteDataModal}
+        onClose={() => {
+          setShowDeleteDataModal(false);
+          setDeleteDataConfirmText('');
+          setDeleteDataMessage(null);
+        }}
+        title={t.deleteAllDataConfirmTitle}
+      >
+        <div className="space-y-4">
+          <p className="text-slate-600 dark:text-slate-400">
+            {t.deleteAllDataConfirmDescription}
+          </p>
+          <div className="bg-slate-100 dark:bg-slate-700 p-3 rounded-lg">
+            <code className="text-sm font-mono text-red-600 dark:text-red-400">
+              {t.deleteAllDataConfirmText}
+            </code>
+          </div>
+          <input
+            type="text"
+            value={deleteDataConfirmText}
+            onChange={(e) => setDeleteDataConfirmText(e.target.value)}
+            placeholder={t.typeToConfirm}
+            className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          />
+          
+          {deleteDataMessage && (
+            <div className={`flex items-start space-x-2 p-4 rounded-lg ${
+              deleteDataMessage.type === 'success' 
+                ? 'bg-green-50 border border-green-200' 
+                : 'bg-red-50 border border-red-200'
+            }`}>
+              {deleteDataMessage.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+              )}
+              <p className={`text-sm ${
+                deleteDataMessage.type === 'success' ? 'text-green-800' : 'text-red-800'
+              }`}>
+                {deleteDataMessage.text}
+              </p>
+            </div>
+          )}
+
+          <div className="flex space-x-3 pt-4">
+            <button
+              onClick={() => {
+                setShowDeleteDataModal(false);
+                setDeleteDataConfirmText('');
+                setDeleteDataMessage(null);
+              }}
+              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              {t.cancel}
+            </button>
+            <button
+              onClick={handleDeleteAllData}
+              disabled={deleteDataLoading || deleteDataConfirmText !== t.deleteAllDataConfirmText}
+              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {deleteDataLoading ? t.pleaseWait : t.deleteAllDataButton}
+            </button>
+          </div>
+        </div>
+      </ConfirmModal>
+
+      {/* Delete Account Modal */}
+      <ConfirmModal
+        isOpen={showDeleteAccountModal}
+        onClose={() => {
+          setShowDeleteAccountModal(false);
+          setDeleteAccountConfirmText('');
+          setDeleteAccountMessage(null);
+        }}
+        title={t.deleteAccountConfirmTitle}
+      >
+        <div className="space-y-4">
+          <p className="text-slate-600 dark:text-slate-400">
+            {t.deleteAccountConfirmDescription}
+          </p>
+          <div className="bg-slate-100 dark:bg-slate-700 p-3 rounded-lg">
+            <code className="text-sm font-mono text-red-600 dark:text-red-400">
+              {t.deleteAccountConfirmText}
+            </code>
+          </div>
+          <input
+            type="text"
+            value={deleteAccountConfirmText}
+            onChange={(e) => setDeleteAccountConfirmText(e.target.value)}
+            placeholder={t.typeToConfirm}
+            className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          />
+          
+          {deleteAccountMessage && (
+            <div className={`flex items-start space-x-2 p-4 rounded-lg ${
+              deleteAccountMessage.type === 'success' 
+                ? 'bg-green-50 border border-green-200' 
+                : 'bg-red-50 border border-red-200'
+            }`}>
+              {deleteAccountMessage.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+              )}
+              <p className={`text-sm ${
+                deleteAccountMessage.type === 'success' ? 'text-green-800' : 'text-red-800'
+              }`}>
+                {deleteAccountMessage.text}
+              </p>
+            </div>
+          )}
+
+          <div className="flex space-x-3 pt-4">
+            <button
+              onClick={() => {
+                setShowDeleteAccountModal(false);
+                setDeleteAccountConfirmText('');
+                setDeleteAccountMessage(null);
+              }}
+              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              {t.cancel}
+            </button>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deleteAccountLoading || deleteAccountConfirmText !== t.deleteAccountConfirmText}
+              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {deleteAccountLoading ? t.pleaseWait : t.deleteAccountButton}
+            </button>
+          </div>
+        </div>
+      </ConfirmModal>
     </div>
   );
 };

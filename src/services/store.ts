@@ -744,6 +744,74 @@ export const useStore = () => {
   };
 
   /**
+   * Delete all user data (subjects, tests, results)
+   * If user is logged in, also deletes data from Firebase
+   */
+  const deleteAllData = async () => {
+    console.log('%c[STORE] Deleting all data', 'color: #ef4444; font-weight: bold;');
+    
+    try {
+      // Reset all data to initial state
+      setData(INITIAL_DATA);
+      
+      // Clear localStorage
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LAST_SYNC_KEY);
+      
+      // If user is logged in, also delete data from Firebase
+      if (firebaseAuth.isSignedIn) {
+        console.log('%c[STORE] Deleting data from Firebase', 'color: #ef4444; font-weight: bold;');
+        await firebaseService.uploadData(INITIAL_DATA);
+        const now = new Date().toISOString();
+        setLastSync(now);
+        localStorage.setItem(LAST_SYNC_KEY, now);
+      }
+      
+      console.log('%c[STORE] All data deleted successfully', 'color: #10b981; font-weight: bold;');
+    } catch (error) {
+      console.error('%c[STORE] Error deleting data', 'color: #ef4444; font-weight: bold;', error);
+      throw error;
+    }
+  };
+
+  /**
+   * Delete user account and all associated data
+   * Only available when user is logged in
+   */
+  const deleteAccount = async () => {
+    if (!firebaseAuth.isSignedIn) {
+      throw new Error('User not logged in');
+    }
+    
+    console.log('%c[STORE] Deleting account', 'color: #ef4444; font-weight: bold;');
+    
+    try {
+      setIsAuthLoading(true);
+      
+      // Delete account from Firebase (this also deletes user data)
+      await firebaseService.deleteUserAccount();
+      
+      // Clean local data
+      setData(INITIAL_DATA);
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LAST_SYNC_KEY);
+      localStorage.removeItem(SESSION_AUTH_KEY);
+      
+      // Reset state
+      setFirebaseAuth({ isSignedIn: false, user: null });
+      setLastSync(null);
+      setInitialSyncDone(false);
+      
+      console.log('%c[STORE] Account deleted successfully', 'color: #10b981; font-weight: bold;');
+    } catch (error) {
+      console.error('%c[STORE] Error deleting account', 'color: #ef4444; font-weight: bold;', error);
+      throw error;
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
+  /**
    * Resolve data conflict by keeping local data
    * Uploads local data to Firebase, overwriting cloud data
    */
@@ -835,5 +903,7 @@ export const useStore = () => {
     syncWithFirebase,
     resolveConflictKeepLocal,
     resolveConflictKeepFirebase,
+    deleteAllData,
+    deleteAccount,
   };
 };

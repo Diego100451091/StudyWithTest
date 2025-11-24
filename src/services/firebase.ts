@@ -9,13 +9,15 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  deleteUser,
   User 
 } from 'firebase/auth';
 import { 
   getFirestore, 
   doc, 
   setDoc, 
-  getDoc, 
+  getDoc,
+  deleteDoc,
   Firestore 
 } from 'firebase/firestore';
 import { UserData } from '../types';
@@ -224,6 +226,37 @@ class FirebaseService {
       await updatePassword(user, newPassword);
     } catch (error: any) {
       console.error('Update password error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete user account and all associated data
+   * This will delete the user's authentication account and all data from Firestore
+   */
+  async deleteUserAccount(): Promise<void> {
+    if (!this.app || !this.db) {
+      throw new Error('Firebase not initialized');
+    }
+
+    const auth = getAuth(this.app);
+    const user = auth.currentUser;
+    
+    if (!user) {
+      throw new Error('Not signed in');
+    }
+
+    try {
+      // First delete user data from Firestore
+      const docRef = doc(this.db, 'users', user.uid);
+      await deleteDoc(docRef);
+      
+      // Then delete the authentication account
+      await deleteUser(user);
+      
+      console.log('%c[FIREBASE] Account deleted successfully', 'color: #10b981; font-weight: bold;');
+    } catch (error: any) {
+      console.error('Delete account error:', error);
       throw error;
     }
   }
