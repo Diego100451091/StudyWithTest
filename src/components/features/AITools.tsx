@@ -8,7 +8,7 @@ import { useModal } from '../../hooks';
 interface AIToolsProps {
   subjects: Subject[];
   language: Language;
-  onImportTest: (test: Test) => void;
+  onImportTest: (test: Test, onSuccess?: () => void, onError?: (code: string) => void) => void;
 }
 
 const AITools: React.FC<AIToolsProps> = ({ subjects, language, onImportTest }) => {
@@ -164,9 +164,16 @@ Be accurate and preserve the original content as much as possible.`;
         })
       };
 
-      onImportTest(newTest);
-      showSuccess(t.success, t.importSuccess);
-      setJsonInput('');
+      onImportTest(
+        newTest,
+        () => {
+          showSuccess(t.success, t.importSuccess);
+          setJsonInput('');
+        },
+        (errCode) => {
+          setError(errCode === 'STORAGE_FULL' ? t.storageFullError : t.syncError);
+        }
+      );
       // Optional: navigate away
     } catch (err: any) {
       setError(err.message || "Failed to parse JSON");

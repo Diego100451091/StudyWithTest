@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { UserData, Subject, Test, TestResult, Question } from '../types';
 import { STORAGE_KEYS, TIMING } from '../constants';
 import { Language } from './translations';
@@ -43,6 +43,7 @@ export const useStore = () => {
   const logoutInProgressRef = useRef(false); // Ref para tener el valor más actualizado
   const dataRef = useRef<UserData>(INITIAL_DATA); // Siempre apunta al data más reciente
   const syncingRef = useRef(false); // Siempre apunta al syncing más reciente
+  const pendingSyncCallbacksRef = useRef<Array<{ onSuccess: () => void; onError: (code: string) => void }>>([]); // Callbacks pendientes de confirmación Firebase
   const [conflictData, setConflictData] = useState<{
     local: UserData;
     firebase: UserData;
@@ -55,6 +56,11 @@ export const useStore = () => {
   // Sync refs with state (updated on every render)
   dataRef.current = data;
   syncingRef.current = syncing;
+
+  // Tamaño del documento del usuario en bytes (para la barra de almacenamiento)
+  const storageSizeBytes = useMemo(() =>
+    new TextEncoder().encode(JSON.stringify(data)).length,
+  [data]);
 
   // Sync ref with state
   useEffect(() => {
@@ -461,8 +467,10 @@ export const useStore = () => {
       return;
     }
 
-    // Tomar snapshot del dato más reciente en el momento de iniciar el upload
+    // Tomar snapshot del dato más reciente y capturar callbacks pendientes
     const dataToUpload = dataRef.current;
+    const callbacks = [...pendingSyncCallbacksRef.current];
+    pendingSyncCallbacksRef.current = [];
     console.log('%c[SYNC] syncWithFirebase: Starting data upload', 'color: #8b5cf6; font-weight: bold;');
 
     try {
@@ -473,13 +481,17 @@ export const useStore = () => {
       setLastSync(now);
       localStorage.setItem(LAST_SYNC_KEY, now);
       console.log('%c[SYNC] syncWithFirebase: Data uploaded successfully', 'color: #10b981; font-weight: bold;');
+      // Notificar éxito a los callbacks pendientes
+      callbacks.forEach(cb => cb.onSuccess());
     } catch (error) {
       console.error('%c[SYNC] syncWithFirebase: Error during upload', 'color: #ef4444; font-weight: bold;', error);
-      if (error instanceof Error) {
-        if (error.message.includes('client is offline')) {
-          console.warn('[WARNING] Firestore is being blocked. Disable AdBlock/uBlock for localhost or add an exception for googleapis.com');
-        }
+      const isStorageFull = error instanceof Error &&
+        (error.message.includes('exceeds maximum size') || error.message.includes('too large') || error.message.includes('Document too large'));
+      if (error instanceof Error && error.message.includes('client is offline')) {
+        console.warn('[WARNING] Firestore is being blocked. Disable AdBlock/uBlock for localhost or add an exception for googleapis.com');
       }
+      // Notificar error a los callbacks pendientes
+      callbacks.forEach(cb => cb.onError(isStorageFull ? 'STORAGE_FULL' : 'SYNC_ERROR'));
     } finally {
       setSyncing(false);
       // Si los datos cambiaron mientras hacíamos el upload, programar re-sync para no perder cambios
@@ -510,7 +522,19 @@ export const useStore = () => {
     }));
   };
 
-  const addTest = (test: Test) => {
+  const addTest = (test: Test, onSuccess?: () => void, onError?: (code: string) => void) => {
+    // Si el usuario está logueado y la sync inicial ya completó, encolar callbacks para la confirmación Firebase
+    if (firebaseAuth.isSignedIn && initialSyncDone) {
+      if (onSuccess || onError) {
+        pendingSyncCallbacksRef.current.push({
+          onSuccess: onSuccess || (() => {}),
+          onError: onError || (() => {}),
+        });
+      }
+    } else {
+      // No logueado: localStorage es siempre syncónico y fiable, llamar inmediatamente
+      if (onSuccess) setTimeout(onSuccess, 0);
+    }
     setData(prev => ({ ...prev, tests: [...prev.tests, test] }));
   };
 
@@ -892,7 +916,8 @@ export const useStore = () => {
     syncing,
     lastSync,
     conflictData,
-    isAuthLoading, // Nuevo estado para mostrar overlay durante auth/logout/descarga
+    isAuthLoading,
+    storageSizeBytes,
     openTutorial,
     closeTutorial,
     toggleLanguage,

@@ -19,6 +19,7 @@ const App: React.FC = () => {
     lastSync,
     conflictData,
     isAuthLoading,
+    storageSizeBytes,
     openTutorial,
     closeTutorial,
     toggleLanguage,
@@ -95,6 +96,7 @@ const App: React.FC = () => {
         onSyncWithFirebase={syncWithFirebase}
         syncing={syncing}
         lastSync={lastSync}
+        storageSizeBytes={storageSizeBytes}
       >
         <Routes>
           <Route 

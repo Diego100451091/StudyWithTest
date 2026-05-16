@@ -20,7 +20,10 @@ interface LayoutProps {
   onSyncWithFirebase: () => void;
   syncing: boolean;
   lastSync: string | null;
+  storageSizeBytes: number;
 }
+
+const FIREBASE_MAX_BYTES = 1_048_576; // 1 MB
 
 const Layout: React.FC<LayoutProps> = ({ 
   children, 
@@ -37,6 +40,7 @@ const Layout: React.FC<LayoutProps> = ({
   onSyncWithFirebase,
   syncing,
   lastSync,
+  storageSizeBytes,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
@@ -159,24 +163,43 @@ const Layout: React.FC<LayoutProps> = ({
                 </div>
               </div>
             ) : firebaseAuth.isSignedIn ? (
-              <div className="flex items-center space-x-2 px-4 py-3 bg-white dark:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 transition-colors">
-                <Cloud className={`w-4 h-4 flex-shrink-0 ${syncing ? 'text-blue-500 animate-pulse' : 'text-green-600 dark:text-green-400'}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-slate-900 dark:text-slate-100 font-medium truncate">
-                    {firebaseAuth.user?.name || t.connected}
-                  </p>
-                  <p className={`text-xs ${syncing ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}`}>
-                    {syncing ? t.syncing : t.syncSuccess}
-                  </p>
+              <>
+                <div className="flex items-center space-x-2 px-4 py-3 bg-white dark:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 transition-colors">
+                  <Cloud className={`w-4 h-4 flex-shrink-0 ${syncing ? 'text-blue-500 animate-pulse' : 'text-green-600 dark:text-green-400'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-slate-900 dark:text-slate-100 font-medium truncate">
+                      {firebaseAuth.user?.name || t.connected}
+                    </p>
+                    <p className={`text-xs ${syncing ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}`}>
+                      {syncing ? t.syncing : t.syncSuccess}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={onSignOutFromGoogle}
+                    className="flex items-center justify-center p-2 text-slate-400 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors flex-shrink-0"
+                    title={t.signOut}
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
                 </div>
-                <button 
-                  onClick={onSignOutFromGoogle}
-                  className="flex items-center justify-center p-2 text-slate-400 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors flex-shrink-0"
-                  title={t.signOut}
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
+                {/* Storage usage bar */}
+                {(() => {
+                  const pct = Math.min(100, Math.round((storageSizeBytes / FIREBASE_MAX_BYTES) * 100));
+                  const color = pct >= 90 ? 'bg-red-500' : pct >= 75 ? 'bg-yellow-500' : 'bg-green-500';
+                  const tooltipText = `${pct}% / 1 MB`;
+                  return (
+                    <div
+                      className="mt-1.5 px-1 h-1 w-full bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden cursor-default"
+                      title={tooltipText}
+                    >
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${color}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  );
+                })()}
+              </>
             ) : (
               <button 
                 onClick={onShowAuthModal}

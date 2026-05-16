@@ -202,6 +202,7 @@ export interface Translations {
   syncing: string;
   syncSuccess: string;
   syncError: string;
+  storageFullError: string;
   lastSync: string;
   notSynced: string;
   dataConflict: string;
@@ -491,6 +492,7 @@ export const translations: Record<Language, Translations> = {
     syncing: 'Sincronizando...',
     syncSuccess: 'Sincronizado',
     syncError: 'Error al sincronizar',
+    storageFullError: 'Error: almacenamiento lleno (límite 1 MB). Elimina tests o resultados anteriores.',
     lastSync: 'Última sincronización',
     notSynced: 'No sincronizado',
     dataConflict: 'Conflicto de Datos',
@@ -779,6 +781,7 @@ export const translations: Record<Language, Translations> = {
     syncing: 'Syncing...',
     syncSuccess: 'Syncronized',
     syncError: 'Sync error',
+    storageFullError: 'Error: storage full (1 MB limit). Delete old tests or results.',
     lastSync: 'Last sync',
     notSynced: 'Not synced',
     dataConflict: 'Data Conflict',
