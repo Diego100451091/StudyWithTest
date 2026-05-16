@@ -306,9 +306,12 @@ class FirebaseService {
       results: data.results.length
     });
 
+    // Strip undefined values: Firestore rejects them (optional fields like testType?, questionIds?)
+    const sanitizedData = JSON.parse(JSON.stringify(data));
+
     try {
       await setDoc(docRef, {
-        userData: data,
+        userData: sanitizedData,
         checksum,
         lastModified: new Date().toISOString(),
       }, { merge: true });
