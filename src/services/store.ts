@@ -41,6 +41,8 @@ export const useStore = () => {
   const [isAuthLoading, setIsAuthLoading] = useState(false); // Para mostrar overlay durante login/logout/descarga
   const [logoutInProgress, setLogoutInProgress] = useState(false); // Para evitar race conditions durante logout
   const logoutInProgressRef = useRef(false); // Ref para tener el valor más actualizado
+  const dataRef = useRef<UserData>(INITIAL_DATA); // Siempre apunta al data más reciente
+  const syncingRef = useRef(false); // Siempre apunta al syncing más reciente
   const [conflictData, setConflictData] = useState<{
     local: UserData;
     firebase: UserData;
@@ -49,6 +51,10 @@ export const useStore = () => {
     localLastModified: string;
     firebaseLastModified: string;
   } | null>(null);
+
+  // Sync refs with state (updated on every render)
+  dataRef.current = data;
+  syncingRef.current = syncing;
 
   // Sync ref with state
   useEffect(() => {
@@ -351,6 +357,7 @@ export const useStore = () => {
         setLastSync(now);
         localStorage.setItem(LAST_SYNC_KEY, now);
         console.log('%c[SYNC] checkAndSync: Data uploaded successfully', 'color: #10b981; font-weight: bold;');
+        setInitialSyncDone(true);
         return;
       }
 
@@ -449,17 +456,19 @@ export const useStore = () => {
       return;
     }
     
-    if (syncing) {
+    if (syncingRef.current) {
       console.log('%c[SYNC] syncWithFirebase: Sync already in progress, skipping', 'color: #f59e0b; font-weight: bold;');
       return;
     }
 
+    // Tomar snapshot del dato más reciente en el momento de iniciar el upload
+    const dataToUpload = dataRef.current;
     console.log('%c[SYNC] syncWithFirebase: Starting data upload', 'color: #8b5cf6; font-weight: bold;');
 
     try {
       setSyncing(true);
       console.log('%c[SYNC] syncWithFirebase: Uploading data to Firebase...', 'color: #8b5cf6; font-weight: bold;');
-      await firebaseService.uploadData(data);
+      await firebaseService.uploadData(dataToUpload);
       const now = new Date().toISOString();
       setLastSync(now);
       localStorage.setItem(LAST_SYNC_KEY, now);
@@ -473,6 +482,11 @@ export const useStore = () => {
       }
     } finally {
       setSyncing(false);
+      // Si los datos cambiaron mientras hacíamos el upload, programar re-sync para no perder cambios
+      if (dataRef.current !== dataToUpload) {
+        console.log('%c[SYNC] syncWithFirebase: Data changed during upload, scheduling re-sync', 'color: #f59e0b; font-weight: bold;');
+        setTimeout(syncWithFirebase, SYNC_DEBOUNCE_DELAY);
+      }
       console.log('%c[SYNC] syncWithFirebase: Finished', 'color: #8b5cf6; font-weight: bold;');
     }
   };
